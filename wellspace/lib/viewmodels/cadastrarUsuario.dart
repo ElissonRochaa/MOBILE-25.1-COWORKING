@@ -1,7 +1,7 @@
+import 'package:Wellspace/services/UsuarioService%20.dart';
 import 'package:flutter/material.dart';
 
 import '../models/usuario.dart';
-import '../services/UsuarioService.dart';
 
 class CadastroViewModel {
   final formKey = GlobalKey<FormState>();

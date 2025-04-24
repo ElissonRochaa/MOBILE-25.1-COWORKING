@@ -1,7 +1,7 @@
 import 'dart:convert';
 
+import 'package:Wellspace/models/Usuario.dart';
 import 'package:http/http.dart' as http;
-import 'package:wellspace/models/Usuario.dart';
 
 class UsuarioService {
   static Future<bool> cadastrarUsuario(Usuario usuario) async {
