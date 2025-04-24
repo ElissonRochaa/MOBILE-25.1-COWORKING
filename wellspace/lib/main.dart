@@ -50,10 +50,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final textStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(
-          color: Colors.green,
-          fontSize: MediaQuery.of(context).size.width * 0.1,
-          fontWeight: FontWeight.bold,
-        );
+      color: Colors.green,
+      fontSize: MediaQuery.of(context).size.width * 0.1,
+      fontWeight: FontWeight.bold,
+    );
 
     return Scaffold(
       appBar: AppBar(

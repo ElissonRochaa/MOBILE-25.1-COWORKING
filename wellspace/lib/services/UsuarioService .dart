@@ -13,9 +13,11 @@ class UsuarioService {
         body: json.encode(usuario.toJson()),
       );
 
+      // Verifica o status da resposta
       if (response.statusCode == 200) {
         return true;
       } else {
+        print('Erro no cadastro: ${response.body}');
         return false;
       }
     } catch (e) {
