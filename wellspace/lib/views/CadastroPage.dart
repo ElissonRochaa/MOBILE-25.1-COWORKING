@@ -1,11 +1,31 @@
+import 'dart:io' as io; // Importar para usar a classe File
+import 'package:flutter/foundation.dart' show kIsWeb; // Importar para usar kIsWeb
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Adicione este pacote no pubspec.yaml
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import '../viewmodels/cadastrarUsuario.dart';
 
-class CadastroPage extends StatelessWidget {
+class CadastroPage extends StatefulWidget {
   final CadastroViewModel viewModel = CadastroViewModel();
 
   CadastroPage({super.key});
+
+  @override
+  _CadastroPageState createState() => _CadastroPageState();
+}
+
+class _CadastroPageState extends State<CadastroPage> {
+  bool _obscureTextSenha = true; 
+  bool _obscureTextConfirmarSenha = true; 
+
+ 
+  Future<void> _getImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      widget.viewModel.fotoPerfil = image.path;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +41,7 @@ class CadastroPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: Form(
-                key: viewModel.formKey,
+                key: widget.viewModel.formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -39,17 +59,17 @@ class CadastroPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
 
+                    // Campos do formulário
                     TextFormField(
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.person),
                         labelText: 'Nome Completo',
                       ),
-                      validator:
-                          (value) =>
-                              value == null || value.isEmpty
-                                  ? 'Por favor, insira seu nome'
-                                  : null,
-                      onSaved: (value) => viewModel.nome = value ?? '',
+                      validator: (value) =>
+                          value == null || value.isEmpty
+                              ? 'Por favor, insira seu nome'
+                              : null,
+                      onSaved: (value) => widget.viewModel.nome = value ?? '',
                     ),
                     const SizedBox(height: 16),
 
@@ -58,60 +78,122 @@ class CadastroPage extends StatelessWidget {
                         prefixIcon: Icon(Icons.email),
                         labelText: 'Email',
                       ),
-                      validator:
-                          (value) =>
-                              value == null || value.isEmpty
-                                  ? 'Por favor, insira seu e-mail'
-                                  : null,
-                      onSaved: (value) => viewModel.email = value ?? '',
+                      validator: (value) =>
+                          value == null || value.isEmpty
+                              ? 'Por favor, insira seu e-mail'
+                              : null,
+                      onSaved: (value) => widget.viewModel.email = value ?? '',
                     ),
                     const SizedBox(height: 16),
 
+                    // Campo de senha
                     TextFormField(
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.lock),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.lock),
                         labelText: 'Senha',
-                        suffixIcon: Icon(Icons.visibility),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureTextSenha ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscureTextSenha = !_obscureTextSenha;
+                            });
+                          },
+                        ),
                       ),
-                      obscureText: true,
-                      validator:
-                          (value) =>
-                              value == null || value.isEmpty
-                                  ? 'Por favor, insira uma senha'
-                                  : null,
-                      onSaved: (value) => viewModel.senha = value ?? '',
+                      obscureText: _obscureTextSenha,
+                      validator: (value) =>
+                          value == null || value.isEmpty
+                              ? 'Por favor, insira uma senha'
+                              : null,
+                      onSaved: (value) => widget.viewModel.senha = value ?? '',
                     ),
                     const SizedBox(height: 16),
 
+                   
+                    TextFormField(
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        labelText: 'Confirmar Senha',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureTextConfirmarSenha ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscureTextConfirmarSenha = !_obscureTextConfirmarSenha;
+                            });
+                          },
+                        ),
+                      ),
+                      obscureText: _obscureTextConfirmarSenha,
+                      validator: (value) =>
+                          value == null || value.isEmpty
+                              ? 'Por favor, confirme sua senha'
+                              : null,
+                      onSaved: (value) => widget.viewModel.confirmarSenha = value ?? '',
+                    ),
+                    const SizedBox(height: 16),
+
+                    
                     TextFormField(
                       decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.lock_outline),
-                        labelText: 'Confirmar Senha',
-                        suffixIcon: Icon(Icons.visibility),
+                        prefixIcon: Icon(Icons.calendar_today),
+                        labelText: 'Data de Nascimento',
                       ),
-                      obscureText: true,
-                      validator:
-                          (value) =>
-                              value == null || value.isEmpty
-                                  ? 'Por favor, confirme sua senha'
-                                  : null,
-                      onSaved:
-                          (value) => viewModel.confirmarSenha = value ?? '',
+                      initialValue: widget.viewModel.dataNascimento.toLocal().toString().split(' ')[0],
+                      onTap: () async {
+                        FocusScope.of(context).requestFocus(FocusNode());
+                        final selectedDate = await showDatePicker(
+                          context: context,
+                          initialDate: widget.viewModel.dataNascimento,
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                        );
+                        if (selectedDate != null && selectedDate != widget.viewModel.dataNascimento) {
+                          widget.viewModel.dataNascimento = selectedDate;
+                        }
+                      },
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'Por favor, insira sua data de nascimento'
+                          : null,
                     ),
                     const SizedBox(height: 16),
 
+                  
+                    GestureDetector(
+                      onTap: _getImage,
+                      child: Container(
+                        height: 100,
+                        width: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey[300],
+                        ),
+                        child: widget.viewModel.fotoPerfil.isEmpty
+                            ? const Icon(Icons.camera_alt, color: Colors.white)
+                            : (kIsWeb
+                                ? const Icon(Icons.camera_alt, color: Colors.white) 
+                                : io.File(widget.viewModel.fotoPerfil).existsSync()
+                                    ? Image.file(
+                                        io.File(widget.viewModel.fotoPerfil),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : const Icon(Icons.camera_alt, color: Colors.white)),
+                      ),
+                    ),
                     const SizedBox(height: 16),
 
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          viewModel.cadastrarUsuario(context);
+                          widget.viewModel.cadastrarUsuario(context);
                         },
                         child: const Text('Cadastrar'),
                       ),
                     ),
-
                     const SizedBox(height: 24),
                     const Text("OU CONTINUE COM"),
 
@@ -138,7 +220,7 @@ class CadastroPage extends StatelessWidget {
                     const SizedBox(height: 16),
                     GestureDetector(
                       onTap: () {
-                        // Navegar para login
+                       
                       },
                       child: const Text(
                         'Já tem uma conta? Faça login',
