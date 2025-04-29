@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../services/UsuarioService.dart';  
-import '../config/JwtDecoder.dart';  
+import '../services/UsuarioService.dart';
+import '../config/JwtDecoder.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,53 +15,44 @@ class _LoginPageState extends State<LoginPage> {
   String _email = '';
   String _senha = '';
   bool _lembrarDeMim = false;
-  bool _obscureText = true; 
-  // Função de login
+  bool _obscureText = true;
+
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       try {
-       
         print('Iniciando requisição de login...');
-    
+
         final response = await UsuarioService.login(_email, _senha);
 
-       
         print('Resposta bruta do servidor: $response');
-        
-        
+
         if (response is String) {
-   
           String token = response;
           await UsuarioService.salvarToken(token);
 
-        
           Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
           print('Decoded Token: $decodedToken');
 
-        
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Login bem-sucedido!')),
           );
 
-        
           Navigator.pushReplacementNamed(context, '/home');
         } else {
-        
           print('Erro no login: Token não encontrado');
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Erro no login: Token não encontrado')),
+            const SnackBar(
+                content: Text('Erro no login: Token não encontrado')),
           );
         }
       } catch (e) {
-       
         print('Erro durante o login: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Erro no login')),
         );
       }
     } else {
-     
       print('Erro: Formulário inválido');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, preencha todos os campos')),
@@ -85,7 +76,6 @@ class _LoginPageState extends State<LoginPage> {
                 style: TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 32),
-             
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'Email',
@@ -103,14 +93,12 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
               const SizedBox(height: 16),
-             
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'Senha',
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(
-                     
                       _obscureText ? Icons.visibility_off : Icons.visibility,
                     ),
                     onPressed: () {
@@ -120,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                     },
                   ),
                 ),
-                obscureText: _obscureText, 
+                obscureText: _obscureText,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor, insira sua senha';
@@ -132,7 +120,6 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
               const SizedBox(height: 16),
-             
               Row(
                 children: [
                   Checkbox(
@@ -147,19 +134,20 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
               const SizedBox(height: 24),
-             
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                  ),
                   child: const Text('Entrar'),
                 ),
               ),
               const SizedBox(height: 16),
-            
               GestureDetector(
                 onTap: () {
-                  Navigator.pushNamed(context, '/cadastro');  
+                  Navigator.pushNamed(context, '/cadastro');
                 },
                 child: const Text(
                   'Não tem uma conta? Cadastre-se',
