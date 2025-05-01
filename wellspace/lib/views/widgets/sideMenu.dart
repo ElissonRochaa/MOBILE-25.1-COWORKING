@@ -41,57 +41,44 @@ class SideMenu extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text('Início'),
-            onTap: () {
-              // Ação para navegar para a tela de Início
-            },
+            onTap: () {},
           ),
           ListTile(
             leading: const Icon(Icons.search),
             title: const Text('Explorar Espaços'),
-            onTap: () {
-              // Ação para navegar para explorar espaços
-            },
+            onTap: () {},
           ),
           ListTile(
             leading: const Icon(Icons.bookmark),
             title: const Text('Minhas Reservas'),
-            onTap: () {
-              // Ação para navegar para as reservas
-            },
+            onTap: () {},
           ),
           ListTile(
             leading: const Icon(Icons.add_business),
             title: const Text('Cadastrar Sala'),
-            onTap: () {
-              // Ação para navegar para o cadastro de sala
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.location_on),
-            title: const Text('Cadastrar Localidade'),
-            onTap: () {
-              // Ação para navegar para o cadastro de localidade
-            },
+            onTap: () {},
           ),
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Meu Perfil'),
-            onTap: () {
-              // Ação para navegar para o perfil do usuário
-            },
+            onTap: () {},
           ),
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Configurações'),
-            onTap: () {
-              // Ação para navegar para configurações
-            },
+            onTap: () {},
           ),
           ListTile(
             leading: const Icon(Icons.help),
             title: const Text('Suporte'),
+            onTap: () {},
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text('Sair'),
             onTap: () {
-              // Ação para navegar para o suporte
+              Navigator.pushReplacementNamed(context, '/login');
             },
           ),
         ],
