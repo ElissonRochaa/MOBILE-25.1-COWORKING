@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/sideMenu.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -12,11 +13,11 @@ class HomePage extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
+      drawer: SideMenu(),  // Adiciona o SideMenu como o drawer da home page
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-           
             TextField(
               decoration: InputDecoration(
                 hintText: 'Buscar por localização ou tipo de espaço...',
@@ -29,14 +30,10 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-        
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {
-              
-                },
+                onPressed: () {},
                 child: const Text(
                   'Cadastre sua sala',
                   style: TextStyle(color: Colors.blue),
@@ -44,8 +41,6 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-            
             const Text(
               'Espaços em Destaque',
               style: TextStyle(
@@ -54,8 +49,6 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-         
             _buildSpaceCard(
               'Coworking Central',
               'Av. Paulista, 1000, São Paulo',
@@ -75,7 +68,6 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  
   Widget _buildSpaceCard(
     String nome,
     String localizacao,
@@ -91,7 +83,6 @@ class HomePage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-           
             Container(
               width: 100,
               height: 100,
@@ -99,7 +90,6 @@ class HomePage extends StatelessWidget {
               child: Icon(Icons.business, size: 50, color: Colors.white),
             ),
             const SizedBox(width: 16),
-           
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -131,13 +121,11 @@ class HomePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 ElevatedButton(
-                  onPressed: () {
-                  
-                  },
+                  onPressed: () {},
                   child: const Text('Open Space'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,  
-                    foregroundColor: Colors.white, 
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
                   ),
                 ),
               ],
