@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:Wellspace/views/CadastroPage.dart';
 import 'package:Wellspace/views/LoginPage.dart';
 import 'package:Wellspace/views/HomePage.dart';
+import 'package:Wellspace/views/CadastroSalaPage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,7 +25,9 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginPage(),
         '/cadastro': (context) => CadastroPage(),
         '/home': (context) => HomePage(),
-        '/alugar': (context) => Alugapage()
+        '/alugar': (context) => Alugapage(),
+        '/cadastroSala': (context) => CadastroSalaPage(),
+      
       },
     );
   }

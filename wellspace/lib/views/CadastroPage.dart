@@ -1,6 +1,6 @@
-import 'dart:io' as io; // Importar para usar a classe File
+import 'dart:io' as io; 
 import 'package:flutter/foundation.dart'
-    show kIsWeb; // Importar para usar kIsWeb
+    show kIsWeb; 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -59,7 +59,7 @@ class _CadastroPageState extends State<CadastroPage> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Campos do formulário
+               
                     TextFormField(
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.person),
@@ -84,7 +84,7 @@ class _CadastroPageState extends State<CadastroPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Campo de senha
+           
                     TextFormField(
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.lock),

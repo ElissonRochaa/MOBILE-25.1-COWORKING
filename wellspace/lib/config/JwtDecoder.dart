@@ -14,7 +14,7 @@ class JwtDecoder {
   static String _base64UrlDecode(String base64Url) {
     String base64 = base64Url.replaceAll('-', '+').replaceAll('_', '/');
 
-    // Corrige o comprimento com padding
+    
     int padding = base64.length % 4;
     if (padding > 0) {
       base64 += '=' * (4 - padding);
