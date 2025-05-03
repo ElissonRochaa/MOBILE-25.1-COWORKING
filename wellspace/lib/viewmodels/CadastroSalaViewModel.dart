@@ -1,8 +1,7 @@
-// lib/viewmodels/cadastro_sala_viewmodel.dart
 
 import 'package:flutter/material.dart';
-import '../models/sala.dart';
-import '../services/sala_service.dart';
+import '../models/Sala.dart';
+import '../services/SalaServicew.dart';
 
 class CadastroSalaViewModel {
   final formKey = GlobalKey<FormState>();
@@ -17,7 +16,7 @@ class CadastroSalaViewModel {
   String disponibilidadeSala = '';
 
   String? validarSenhas() {
-    // se precisar validar algo extra
+  
     return null;
   }
 
@@ -35,7 +34,7 @@ class CadastroSalaViewModel {
     if (!form.validate()) return;
     form.save();
 
-    // monta o model e converte horários para HH:mm:ss
+    
     final sala = Sala(
       nomeSala: nomeSala,
       descricao: descricao,

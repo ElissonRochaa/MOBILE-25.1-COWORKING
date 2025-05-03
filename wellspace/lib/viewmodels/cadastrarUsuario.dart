@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/usuario.dart';
+import '../models/Usuario.dart';
 import '../services/UsuarioService.dart'; 
 
 class CadastroViewModel {

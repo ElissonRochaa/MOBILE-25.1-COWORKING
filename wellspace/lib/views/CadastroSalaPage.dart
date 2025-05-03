@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/sala.dart';
-import '../services/salaService.dart';
+import 'package:Wellspace/models/Sala.dart';
+import 'package:Wellspace/services/SalaService.dart';
+
 
 class CadastroSalaPage extends StatefulWidget {
   @override
