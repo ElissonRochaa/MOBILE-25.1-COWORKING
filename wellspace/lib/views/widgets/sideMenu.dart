@@ -41,7 +41,9 @@ class SideMenu extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text('Início'),
-            onTap: () {},
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/home');
+            },
           ),
           ListTile(
             leading: const Icon(Icons.search),
@@ -57,14 +59,15 @@ class SideMenu extends StatelessWidget {
             leading: const Icon(Icons.add_business),
             title: const Text('Cadastrar Sala'),
             onTap: () {
-
-                Navigator.pushReplacementNamed(context, '/cadastroSala');
+              Navigator.pushReplacementNamed(context, '/cadastroSala');
             },
           ),
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Meu Perfil'),
-            onTap: () {},
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/Perfil');
+            },
           ),
           ListTile(
             leading: const Icon(Icons.settings),
