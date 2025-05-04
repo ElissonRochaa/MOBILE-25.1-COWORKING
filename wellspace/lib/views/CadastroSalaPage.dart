@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:Wellspace/models/Sala.dart';
 import 'package:Wellspace/services/SalaService.dart';
 
-
 class CadastroSalaPage extends StatefulWidget {
   @override
   _CadastroSalaPageState createState() => _CadastroSalaPageState();
@@ -11,18 +10,15 @@ class CadastroSalaPage extends StatefulWidget {
 class _CadastroSalaPageState extends State<CadastroSalaPage> {
   final _formKey = GlobalKey<FormState>();
 
-
   final _nomeController = TextEditingController();
   final _descricaoController = TextEditingController();
   final _tamanhoController = TextEditingController();
   final _precoController = TextEditingController();
   final _dispSemanaController = TextEditingController();
 
-  
   TimeOfDay _inicio = TimeOfDay(hour: 8, minute: 0);
   TimeOfDay _fim = TimeOfDay(hour: 18, minute: 0);
 
- 
   String? _dispSala;
   final List<String> _opcoesDispSala = [
     'DISPONIVEL',
@@ -36,8 +32,10 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
     );
     if (sel != null) {
       setState(() {
-        if (isStart) _inicio = sel;
-        else _fim = sel;
+        if (isStart)
+          _inicio = sel;
+        else
+          _fim = sel;
       });
     }
   }
@@ -73,7 +71,6 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      
                       TextFormField(
                         controller: _nomeController,
                         decoration: InputDecoration(
@@ -82,12 +79,11 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                           border: OutlineInputBorder(),
                           helperText: 'Nome identificador da sala',
                         ),
-                        validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Informe o nome da sala' : null,
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Informe o nome da sala'
+                            : null,
                       ),
                       const SizedBox(height: 16),
-
-                     
                       TextFormField(
                         controller: _descricaoController,
                         decoration: InputDecoration(
@@ -97,25 +93,25 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                           helperText: 'Descrição detalhada da sala',
                         ),
                         maxLines: 3,
-                        validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Informe a descrição' : null,
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Informe a descrição'
+                            : null,
                       ),
                       const SizedBox(height: 16),
-
                       TextFormField(
                         controller: _tamanhoController,
                         decoration: InputDecoration(
                           labelText: 'Tamanho',
                           hintText: 'Ex: Grande',
                           border: OutlineInputBorder(),
-                          helperText: 'Tamanho da sala (Pequena, Média, Grande)',
+                          helperText:
+                              'Tamanho da sala (Pequena, Média, Grande)',
                         ),
-                        validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Informe o tamanho' : null,
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Informe o tamanho'
+                            : null,
                       ),
                       const SizedBox(height: 16),
-
-                   
                       TextFormField(
                         controller: _precoController,
                         decoration: InputDecoration(
@@ -135,8 +131,6 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                         },
                       ),
                       const SizedBox(height: 16),
-
-                 
                       TextFormField(
                         controller: _dispSemanaController,
                         decoration: InputDecoration(
@@ -145,12 +139,11 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                           border: OutlineInputBorder(),
                           helperText: 'Dias em que a sala está disponível',
                         ),
-                        validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Informe a disponibilidade' : null,
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Informe a disponibilidade'
+                            : null,
                       ),
                       const SizedBox(height: 16),
-
-                 
                       Row(
                         children: [
                           Expanded(
@@ -187,7 +180,6 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                         ],
                       ),
                       const SizedBox(height: 16),
-
                       DropdownButtonFormField<String>(
                         decoration: InputDecoration(
                           labelText: 'Estado da Sala',
@@ -206,18 +198,19 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                             (v == null) ? 'Selecione o estado da sala' : null,
                       ),
                       const SizedBox(height: 32),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           TextButton.icon(
-                            icon: Icon(Icons.close),
-                            label: Text('Cancelar'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: azul,
-                            ),
-                            onPressed: () => Navigator.pop(context),
-                          ),
+                              icon: Icon(Icons.close),
+                              label: Text('Cancelar'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: azul,
+                              ),
+                              onPressed: () {
+                                Navigator.pushReplacementNamed(
+                                    context, '/home');
+                              }),
                           const SizedBox(width: 16),
                           ElevatedButton.icon(
                             icon: Icon(Icons.save),
@@ -250,9 +243,8 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                                     content: Text(success
                                         ? 'Sala cadastrada com sucesso!'
                                         : 'Erro ao cadastrar sala'),
-                                    backgroundColor: success
-                                        ? Colors.green
-                                        : Colors.red,
+                                    backgroundColor:
+                                        success ? Colors.green : Colors.red,
                                   ),
                                 );
                               }
