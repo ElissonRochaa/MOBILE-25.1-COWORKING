@@ -1,7 +1,6 @@
-
 import 'package:flutter/material.dart';
 import '../models/Sala.dart';
-import '../services/SalaServicew.dart';
+import '../services/SalaService.dart';
 
 class CadastroSalaViewModel {
   final formKey = GlobalKey<FormState>();
@@ -16,11 +15,11 @@ class CadastroSalaViewModel {
   String disponibilidadeSala = '';
 
   String? validarSenhas() {
-  
     return null;
   }
 
-  void _showSnackBar(BuildContext context, String message, {bool isError = false}) {
+  void _showSnackBar(BuildContext context, String message,
+      {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -34,16 +33,17 @@ class CadastroSalaViewModel {
     if (!form.validate()) return;
     form.save();
 
-    
     final sala = Sala(
       nomeSala: nomeSala,
       descricao: descricao,
       tamanho: tamanho,
       precoHora: double.tryParse(precoHora) ?? 0,
       disponibilidadeDiaSemana: disponibilidadeDiaSemana,
-      disponibilidadeInicio: '${disponibilidadeInicio.hour.toString().padLeft(2, '0')}:'
+      disponibilidadeInicio:
+          '${disponibilidadeInicio.hour.toString().padLeft(2, '0')}:'
           '${disponibilidadeInicio.minute.toString().padLeft(2, '0')}:00',
-      disponibilidadeFim: '${disponibilidadeFim.hour.toString().padLeft(2, '0')}:'
+      disponibilidadeFim:
+          '${disponibilidadeFim.hour.toString().padLeft(2, '0')}:'
           '${disponibilidadeFim.minute.toString().padLeft(2, '0')}:00',
       disponibilidadeSala: disponibilidadeSala,
     );
@@ -56,7 +56,8 @@ class CadastroSalaViewModel {
         _showSnackBar(context, 'Erro ao cadastrar sala', isError: true);
       }
     } catch (e) {
-      _showSnackBar(context, 'Erro na comunicação com o servidor', isError: true);
+      _showSnackBar(context, 'Erro na comunicação com o servidor',
+          isError: true);
     }
   }
 }
