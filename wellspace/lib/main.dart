@@ -1,4 +1,5 @@
 import 'package:Wellspace/views/AlugarPage.dart';
+import 'package:Wellspace/views/EspacoPage.dart';
 import 'package:flutter/material.dart';
 import 'package:Wellspace/views/CadastroPage.dart';
 import 'package:Wellspace/views/LoginPage.dart';
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       initialRoute: '/login',
+      debugShowCheckedModeBanner: false,
       routes: {
         '/login': (context) => LoginPage(),
         '/cadastro': (context) => CadastroPage(),
@@ -29,6 +31,7 @@ class MyApp extends StatelessWidget {
         '/alugar': (context) => Alugapage(),
         '/cadastroSala': (context) => CadastroSalaPage(),
         '/Perfil': (context) => ProfilePage(),
+        '/espacos': (context) => EspacosPage()
       },
     );
   }
