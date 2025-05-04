@@ -4,6 +4,7 @@ import 'package:Wellspace/views/CadastroPage.dart';
 import 'package:Wellspace/views/LoginPage.dart';
 import 'package:Wellspace/views/HomePage.dart';
 import 'package:Wellspace/views/CadastroSalaPage.dart';
+import 'package:Wellspace/views/ProfilePage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => HomePage(),
         '/alugar': (context) => Alugapage(),
         '/cadastroSala': (context) => CadastroSalaPage(),
-      
+        '/Perfil': (context) => ProfilePage(),
       },
     );
   }
