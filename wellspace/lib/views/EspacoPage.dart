@@ -64,7 +64,7 @@ class _EspacosPageState extends State<EspacosPage> {
       child: TextField(
         onChanged: (value) => setState(() => searchQuery = value),
         decoration: InputDecoration(
-          hintText: 'Buscar por localização ou nome...',
+          hintText: 'Buscar por nome',
           prefixIcon: const Icon(Icons.search),
           filled: true,
           fillColor: Colors.white,
@@ -226,9 +226,7 @@ class _EspacosPageState extends State<EspacosPage> {
                           color: Colors.blue),
                     ),
                     ElevatedButton(
-                      onPressed: () {
-                        // Ação de ver detalhes
-                      },
+                      onPressed: () {},
                       child: const Text('Ver Detalhes'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
