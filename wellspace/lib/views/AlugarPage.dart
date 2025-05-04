@@ -74,14 +74,44 @@ class _CoworkingPageState extends State<CoworkingPage> {
               const Text('Início > Coworking > Coworking Central',
                   style: TextStyle(color: Colors.grey)),
               const SizedBox(height: 8),
-              Container(
-                height: 200,
-                color: Colors.grey[300],
-                child: const Center(child: Text('Carrossel de imagens')),
+              Stack(
+                children: [
+                  Container(
+                    height: 200,
+                    color: Colors.grey[300],
+                    child: const Center(child: Text('Carrossel de imagens')),
+                  ),
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.favorite_border),
+                          onPressed: () {},
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.share),
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  )
+                ],
               ),
               const SizedBox(height: 16),
               const Text('Coworking Central',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Row(
+                children: const [
+                  Icon(Icons.location_on, size: 16, color: Colors.grey),
+                  SizedBox(width: 4),
+                  Text('Open Space - Centro, São Paulo',
+                      style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+              const SizedBox(height: 8),
               Row(
                 children: const [
                   Icon(Icons.star, color: Colors.amber),
@@ -128,10 +158,36 @@ class _CoworkingPageState extends State<CoworkingPage> {
                 ],
               ),
               const SizedBox(height: 16),
-              _buildReservationForm(),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Por hora',
+                        style: TextStyle(color: Colors.grey)),
+                    const SizedBox(height: 4),
+                    const Text('R\$ 25',
+                        style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF004AAD))),
+                    const SizedBox(height: 4),
+                    const Text('Atualizado em abr de 2025',
+                        style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    const SizedBox(height: 16),
+                    _buildReservationForm(),
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -141,11 +197,32 @@ class _CoworkingPageState extends State<CoworkingPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text('Comparativo de Preços',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Por hora:'),
+                        Text('R\$ 25'),
+                      ],
+                    ),
                     SizedBox(height: 8),
-                    Text('Por hora: R\$ 25'),
-                    Text('Por dia: R\$ 100 (17% de economia)'),
-                    Text('Por mês: R\$ 1100 (72% de economia)'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Por dia:'),
+                        Text('R\$ 100 (17% de economia)'),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Por mês:'),
+                        Text('R\$ 1100 (72% de economia)'),
+                      ],
+                    ),
                   ],
                 ),
               )
@@ -225,7 +302,8 @@ class _CoworkingPageState extends State<CoworkingPage> {
                     : '${_selectedDate!.day.toString().padLeft(2, '0')}/'
                         '${_selectedDate!.month.toString().padLeft(2, '0')}/'
                         '${_selectedDate!.year}',
-                border: const OutlineInputBorder(),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 suffixIcon: const Icon(Icons.calendar_today),
               ),
             ),
@@ -243,7 +321,8 @@ class _CoworkingPageState extends State<CoworkingPage> {
                       labelText: _startTime == null
                           ? 'Início'
                           : _startTime!.format(context),
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                 ),
@@ -259,7 +338,8 @@ class _CoworkingPageState extends State<CoworkingPage> {
                       labelText: _endTime == null
                           ? 'Término'
                           : _endTime!.format(context),
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                 ),
@@ -271,24 +351,37 @@ class _CoworkingPageState extends State<CoworkingPage> {
         TextFormField(
           initialValue: '1',
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Número de Pessoas',
-            border: OutlineInputBorder(),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
           onChanged: (val) => setState(() => _people = int.tryParse(val) ?? 1),
         ),
+        const SizedBox(height: 16),
+        Text('Total: R\$ ${totalPrice.toStringAsFixed(2)}',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Total: R\$ ${totalPrice.toStringAsFixed(2)}',
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ElevatedButton(
-              onPressed: () {},
-              child: const Text('Reservar Agora'),
-            )
-          ],
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF004AAD),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 2,
+            ),
+            child: const Text(
+              'Reservar Agora',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
         )
       ],
     );
