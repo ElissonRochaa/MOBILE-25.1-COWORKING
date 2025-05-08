@@ -1,3 +1,4 @@
+import 'package:Wellspace/views/widgets/sideMenu.dart';
 import 'package:flutter/material.dart';
 
 class Alugapage extends StatelessWidget {
@@ -5,10 +6,7 @@ class Alugapage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const CoworkingPage(),
-    );
+    return const CoworkingPage();
   }
 }
 
@@ -64,6 +62,11 @@ class _CoworkingPageState extends State<CoworkingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('WellSpace'),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      ),
+      drawer: SideMenu(),
       backgroundColor: Colors.grey.shade100,
       body: SafeArea(
         child: SingleChildScrollView(
