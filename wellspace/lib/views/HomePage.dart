@@ -1,15 +1,13 @@
-
 import 'package:flutter/material.dart';
-import '../views/widgets/sideMenu.dart';  
+import '../views/widgets/sideMenu.dart';
+
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    
       drawer: SideMenu(),
-
       appBar: AppBar(
         title: const Text('Início'),
         leading: Builder(
@@ -19,7 +17,6 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -38,9 +35,6 @@ class HomePage extends StatelessWidget {
     );
   }
 }
-
-
-
 
 class HeroSection extends StatelessWidget {
   const HeroSection({Key? key}) : super(key: key);
@@ -86,8 +80,7 @@ class HeroSection extends StatelessWidget {
                         Expanded(
                           child: TextField(
                             decoration: InputDecoration(
-                              hintText:
-                                  'Buscar espaço ideal',
+                              hintText: 'Buscar espaço ideal',
                               prefixIcon: const Icon(Icons.search),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -101,7 +94,9 @@ class HeroSection extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/espacos');
+                          },
                           child: const Text('Buscar'),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
@@ -112,8 +107,8 @@ class HeroSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     TextButton(
-                      onPressed: () =>
-                          Navigator.pushReplacementNamed(context, '/cadastroSala'),
+                      onPressed: () => Navigator.pushReplacementNamed(
+                          context, '/cadastroSala'),
                       child: const Text('Cadastre sua sala'),
                     ),
                   ],
@@ -152,14 +147,17 @@ class FeaturedSpacesSection extends StatelessWidget {
             height: 260,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              children: const [
-                SizedBox(width: 8),
+              children: [
+                const SizedBox(width: 8),
                 SpaceCard(
                   nome: 'Coworking Central',
                   localizacao: 'Av. Paulista, 1000, São Paulo',
                   preco: 'R\$ 120/dia',
                   avaliacao: 4.8,
                   tipo: 'Open Space',
+                  onTap: () {
+                    Navigator.pushNamed(context, '/alugar');
+                  },
                 ),
                 SpaceCard(
                   nome: 'Office Premium',
@@ -167,6 +165,9 @@ class FeaturedSpacesSection extends StatelessWidget {
                   preco: 'R\$ 200/dia',
                   avaliacao: 4.8,
                   tipo: 'Sala Privativa',
+                  onTap: () {
+                    Navigator.pushNamed(context, '/alugar');
+                  },
                 ),
                 SpaceCard(
                   nome: 'Meeting Space',
@@ -174,8 +175,11 @@ class FeaturedSpacesSection extends StatelessWidget {
                   preco: 'R\$ 300/dia',
                   avaliacao: 4.8,
                   tipo: 'Sala de Reunião',
+                  onTap: () {
+                    Navigator.pushNamed(context, '/alugar');
+                  },
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
               ],
             ),
           ),
@@ -191,6 +195,7 @@ class SpaceCard extends StatelessWidget {
   final String preco;
   final double avaliacao;
   final String tipo;
+  final VoidCallback? onTap;
 
   const SpaceCard({
     Key? key,
@@ -199,57 +204,59 @@ class SpaceCard extends StatelessWidget {
     required this.preco,
     required this.avaliacao,
     required this.tipo,
+    this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      child: Container(
-        width: 200,
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 100,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Center(
-                  child: Icon(Icons.image, size: 40, color: Colors.white)),
-            ),
-            const SizedBox(height: 8),
-            Text(nome, style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(localizacao, style: const TextStyle(fontSize: 12)),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const Icon(Icons.star, size: 14, color: Colors.amber),
-                const SizedBox(width: 4),
-                Text('$avaliacao',
-                    style: const TextStyle(fontSize: 12)),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(tipo, style: const TextStyle(fontSize: 10)),
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        child: Container(
+          width: 200,
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 100,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ],
-            ),
-            const Spacer(),
-            Text(preco,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.green)),
-          ],
+                child: const Center(
+                    child: Icon(Icons.image, size: 40, color: Colors.white)),
+              ),
+              const SizedBox(height: 8),
+              Text(nome, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(localizacao, style: const TextStyle(fontSize: 12)),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  const Icon(Icons.star, size: 14, color: Colors.amber),
+                  const SizedBox(width: 4),
+                  Text('$avaliacao', style: const TextStyle(fontSize: 12)),
+                  const Spacer(),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(tipo, style: const TextStyle(fontSize: 10)),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Text(preco,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.green)),
+            ],
+          ),
         ),
       ),
     );
@@ -276,8 +283,7 @@ class HowItWorksSection extends StatelessWidget {
               _StepItem(
                 icon: Icons.search,
                 title: 'Busque',
-                description:
-                    'Encontre o espaço ideal para suas necessidades.',
+                description: 'Encontre o espaço ideal para suas necessidades.',
               ),
               _StepItem(
                 icon: Icons.calendar_today,
@@ -288,8 +294,7 @@ class HowItWorksSection extends StatelessWidget {
               _StepItem(
                 icon: Icons.work,
                 title: 'Trabalhe',
-                description:
-                    'Aproveite um ambiente profissional e produtivo.',
+                description: 'Aproveite um ambiente profissional e produtivo.',
               ),
             ],
           ),
@@ -322,13 +327,11 @@ class _StepItem extends StatelessWidget {
             child: Icon(icon, size: 30, color: Colors.blue),
           ),
           const SizedBox(height: 8),
-          Text(title,
-              style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text(description,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontSize: 12, color: Colors.black54)),
+              style: const TextStyle(fontSize: 12, color: Colors.black54)),
         ],
       ),
     );
@@ -352,9 +355,7 @@ class CTABanner extends StatelessWidget {
           const Text(
             'Pronto para encontrar seu espaço ideal?',
             style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold),
+                color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -369,8 +370,7 @@ class CTABanner extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.blue,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 32, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
             ),
           ),
         ],
