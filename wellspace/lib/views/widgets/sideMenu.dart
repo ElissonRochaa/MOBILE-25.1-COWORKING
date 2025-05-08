@@ -48,7 +48,9 @@ class SideMenu extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.search),
             title: const Text('Explorar Espaços'),
-            onTap: () {},
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/espacos');
+            },
           ),
           ListTile(
             leading: const Icon(Icons.bookmark),
