@@ -1,3 +1,4 @@
+import 'package:Wellspace/views/widgets/sideMenu.dart';
 import 'package:flutter/material.dart';
 
 class EspacosPage extends StatefulWidget {
@@ -34,6 +35,7 @@ class _EspacosPageState extends State<EspacosPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: SideMenu(),
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.white,
