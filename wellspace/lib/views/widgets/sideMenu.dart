@@ -21,7 +21,7 @@ class SideMenu extends StatelessWidget {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'João Silva',
+                  'Elisson Rocha',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,

@@ -1,3 +1,4 @@
+import 'package:Wellspace/views/widgets/sideMenu.dart';
 import 'package:flutter/material.dart';
 import 'package:Wellspace/models/Sala.dart';
 import 'package:Wellspace/services/SalaService.dart';
@@ -54,6 +55,7 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
   Widget build(BuildContext context) {
     final azul = Colors.blue;
     return Scaffold(
+      drawer: SideMenu(),
       appBar: AppBar(title: Text('Cadastro de Sala')),
       body: Center(
         child: SingleChildScrollView(

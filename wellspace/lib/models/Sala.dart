@@ -1,5 +1,3 @@
-
-
 class Sala {
   String nomeSala;
   String descricao;
@@ -7,8 +5,8 @@ class Sala {
   double precoHora;
   String disponibilidadeDiaSemana;
   String disponibilidadeInicio;
-  String disponibilidadeFim;   
-  String disponibilidadeSala;   
+  String disponibilidadeFim;
+  String disponibilidadeSala;
 
   Sala({
     required this.nomeSala,

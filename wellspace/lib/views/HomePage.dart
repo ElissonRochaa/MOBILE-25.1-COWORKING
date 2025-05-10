@@ -365,7 +365,9 @@ class CTABanner extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/espacos');
+            },
             child: const Text('Explorar Espaços'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/Usuario.dart';
-import '../services/UsuarioService.dart'; 
+import '../services/UsuarioService.dart';
 
 class CadastroViewModel {
   final formKey = GlobalKey<FormState>();
@@ -18,8 +18,8 @@ class CadastroViewModel {
     return null;
   }
 
-
-  void _showSnackBar(BuildContext context, String message, {bool isError = false}) {
+  void _showSnackBar(BuildContext context, String message,
+      {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -28,41 +28,37 @@ class CadastroViewModel {
     );
   }
 
-
   Future<void> cadastrarUsuario(BuildContext context) async {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
 
-    
       String? senhaError = validarSenhas();
       if (senhaError != null) {
         _showSnackBar(context, senhaError, isError: true);
         return;
       }
 
-     
       Usuario usuario = Usuario(
         nome: nome,
         email: email,
         senha: senha,
         dataNascimento: dataNascimento,
         fotoPerfil: fotoPerfil,
-        integridade: false, 
+        integridade: false,
       );
 
       try {
-      
         bool success = await UsuarioService.cadastrarUsuario(usuario);
 
-       
         if (success) {
           _showSnackBar(context, 'Cadastro bem-sucedido!');
+          Navigator.pushReplacementNamed(context, '/login');
         } else {
           _showSnackBar(context, 'Erro no cadastro', isError: true);
         }
       } catch (e) {
-       
-        _showSnackBar(context, 'Erro ao se comunicar com o servidor', isError: true);
+        _showSnackBar(context, 'Erro ao se comunicar com o servidor',
+            isError: true);
       }
     }
   }

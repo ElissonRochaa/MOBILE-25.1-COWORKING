@@ -20,7 +20,7 @@ class ProfileCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             const Text(
-              "Ana Carolina Silva",
+              "Elisson Rocha",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),

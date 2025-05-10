@@ -228,7 +228,9 @@ class _EspacosPageState extends State<EspacosPage> {
                           color: Colors.blue),
                     ),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/alugar');
+                      },
                       child: const Text('Ver Detalhes'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
