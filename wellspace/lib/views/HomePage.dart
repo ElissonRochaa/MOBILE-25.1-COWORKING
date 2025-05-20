@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'package:Wellspace/models/Sala.dart';
+import 'package:Wellspace/viewmodels/SalaListViewModel.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../views/widgets/sideMenu.dart';
 
 class HomePage extends StatelessWidget {
@@ -70,7 +74,8 @@ class HeroSection extends StatelessWidget {
           Center(
             child: Card(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
@@ -122,11 +127,31 @@ class HeroSection extends StatelessWidget {
   }
 }
 
-class FeaturedSpacesSection extends StatelessWidget {
+class FeaturedSpacesSection extends StatefulWidget {
   const FeaturedSpacesSection({Key? key}) : super(key: key);
 
   @override
+  _FeaturedSpacesSectionState createState() => _FeaturedSpacesSectionState();
+}
+
+class _FeaturedSpacesSectionState extends State<FeaturedSpacesSection> {
+  final SalaListViewModel salaListViewModel = SalaListViewModel();
+
+  @override
+  void initState() {
+    super.initState();
+    salaListViewModel.carregarSalas().then((_) {
+      setState(() {}); // Atualiza a UI após carregar as salas
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Seleciona as primeiras 5 salas como destaques (você pode adaptar esse filtro)
+    List<Sala> destaques = salaListViewModel.salas.length > 5
+        ? salaListViewModel.salas.sublist(0, 5)
+        : salaListViewModel.salas;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -145,43 +170,29 @@ class FeaturedSpacesSection extends StatelessWidget {
           const SizedBox(height: 12),
           SizedBox(
             height: 260,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                const SizedBox(width: 8),
-                SpaceCard(
-                  nome: 'Coworking Central',
-                  localizacao: 'Av. Paulista, 1000, São Paulo',
-                  preco: 'R\$ 120/dia',
-                  avaliacao: 4.8,
-                  tipo: 'Open Space',
-                  onTap: () {
-                    Navigator.pushNamed(context, '/alugar');
-                  },
-                ),
-                SpaceCard(
-                  nome: 'Office Premium',
-                  localizacao: 'Rua Augusta, 500, São Paulo',
-                  preco: 'R\$ 200/dia',
-                  avaliacao: 4.8,
-                  tipo: 'Sala Privativa',
-                  onTap: () {
-                    Navigator.pushNamed(context, '/alugar');
-                  },
-                ),
-                SpaceCard(
-                  nome: 'Meeting Space',
-                  localizacao: 'Av. Brigadeiro Faria Lima, 3000, São Paulo',
-                  preco: 'R\$ 300/dia',
-                  avaliacao: 4.8,
-                  tipo: 'Sala de Reunião',
-                  onTap: () {
-                    Navigator.pushNamed(context, '/alugar');
-                  },
-                ),
-                const SizedBox(width: 8),
-              ],
-            ),
+            child: salaListViewModel.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: destaques.length,
+                    itemBuilder: (context, index) {
+                      final espaco = destaques[index];
+                      return SpaceCard(
+                        nome: espaco.nomeSala,
+                        localizacao: espaco
+                            .descricao, // pode ajustar para endereço se tiver
+                        preco:
+                            'R\$ ${espaco.precoHora.toStringAsFixed(2)}/hora',
+                        avaliacao: 4, // ajustar se tiver avaliação no modelo
+                        tipo: espaco
+                            .disponibilidadeSala, // exemplo de campo para tipo
+                        onTap: () {
+                          Navigator.pushNamed(context, '/alugar',
+                              arguments: espaco);
+                        },
+                      );
+                    },
+                  ),
           ),
         ],
       ),
