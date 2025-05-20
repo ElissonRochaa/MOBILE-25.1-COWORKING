@@ -69,10 +69,12 @@ class UsuarioService {
   }
 
   // Obter token salvo
-  static Future<String?> obterToken() async => await _storage.read(key: 'jwt_token');
+  static Future<String?> obterToken() async =>
+      await _storage.read(key: 'jwt_token');
 
   // Obter usuárioId salvo
-  static Future<String?> obterUsuarioId() async => await _storage.read(key: 'usuario_id');
+  static Future<String?> obterUsuarioId() async =>
+      await _storage.read(key: 'usuario_id');
 
   // Logout (apaga token e usuárioId)
   static Future<void> logout() async {

@@ -7,7 +7,6 @@ class SalaService {
   static const String _baseUrl = 'http://localhost:8080';
   static final _storage = const FlutterSecureStorage();
 
-  
   static Future<String> _getTokenOrThrow() async {
     final token = await _storage.read(key: 'jwt_token');
     if (token == null || token.isEmpty) {
@@ -20,7 +19,6 @@ class SalaService {
   static bool _isSuccess(int statusCode) =>
       statusCode == 200 || statusCode == 201 || statusCode == 204;
 
-  
   static Future<Sala?> cadastrarSala(Sala sala) async {
     try {
       final token = await _getTokenOrThrow();
@@ -40,7 +38,8 @@ class SalaService {
         print('[SalaService] Sala cadastrada com sucesso.');
         return Sala.fromJson(json.decode(response.body));
       } else {
-        print('[SalaService] Erro ao cadastrar sala: ${response.statusCode} – ${response.body}');
+        print(
+            '[SalaService] Erro ao cadastrar sala: ${response.statusCode} – ${response.body}');
         return null;
       }
     } catch (e) {
@@ -48,7 +47,6 @@ class SalaService {
       return null;
     }
   }
-
 
   static Future<List<Sala>> listarSalas() async {
     try {
@@ -76,7 +74,6 @@ class SalaService {
     }
   }
 
-
   static Future<bool> deletarSala(String id) async {
     try {
       final token = await _getTokenOrThrow();
@@ -97,8 +94,8 @@ class SalaService {
     }
   }
 
- 
-  static Future<bool> alterarDisponibilidade(String id, String novaDisponibilidade) async {
+  static Future<bool> alterarDisponibilidade(
+      String id, String novaDisponibilidade) async {
     try {
       final token = await _getTokenOrThrow();
 
@@ -111,7 +108,8 @@ class SalaService {
         body: json.encode(novaDisponibilidade),
       );
 
-      print('[SalaService] alterarDisponibilidade status: ${response.statusCode}');
+      print(
+          '[SalaService] alterarDisponibilidade status: ${response.statusCode}');
 
       return _isSuccess(response.statusCode);
     } catch (e) {
