@@ -1,17 +1,17 @@
 class Sala {
-  final String id;
+  final String? id; 
   final String nomeSala;
   final String descricao;
   final String tamanho;
   final double precoHora;
   final String disponibilidadeDiaSemana;
-  final String disponibilidadeInicio; // formato HH:mm:ss
-  final String disponibilidadeFim;    // formato HH:mm:ss
-  final String disponibilidadeSala;  // ex: "DISPONIVEL" ou "INDISPONIVEL"
+  final String disponibilidadeInicio;
+  final String disponibilidadeFim;
+  final String disponibilidadeSala;
   final String usuarioId;
 
   Sala({
-    required this.id,
+    this.id, 
     required this.nomeSala,
     required this.descricao,
     required this.tamanho,
@@ -25,7 +25,7 @@ class Sala {
 
   factory Sala.fromJson(Map<String, dynamic> json) {
     return Sala(
-      id: json['salasId']?.toString() ?? '',
+      id: json['salasId']?.toString(), 
       nomeSala: json['nomeSala'] ?? '',
       descricao: json['descricao'] ?? '',
       tamanho: json['tamanho'] ?? '',

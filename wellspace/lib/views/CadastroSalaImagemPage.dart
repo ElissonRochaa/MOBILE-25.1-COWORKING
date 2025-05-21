@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:dotted_border/dotted_border.dart'; // NOVO IMPORTANTE
+import 'package:dotted_border/dotted_border.dart';
 import '../viewmodels/SalaImagemViewModel.dart';
 
 class CadastroSalaImagemPage extends StatefulWidget {
@@ -25,36 +25,43 @@ class _CadastroSalaImagemPageState extends State<CadastroSalaImagemPage> {
         .listarImagensPorSala(widget.salaId);
   }
 
-  Future<void> selecionarImagens() async {
-    final List<XFile>? xfiles = await picker.pickMultiImage();
-    if (xfiles != null && xfiles.isNotEmpty) {
-      List<Uint8List> bytesList = [];
-      List<String> namesList = [];
-      for (var xfile in xfiles) {
-        if (await xfile.length() > 10 * 1024 * 1024) continue; // ignora >10MB
-        bytesList.add(await xfile.readAsBytes());
-        namesList.add(xfile.name);
+  Future<void> selecionarImagem() async {
+    final XFile? xfile = await picker.pickImage(source: ImageSource.gallery);
+    if (xfile != null) {
+      if (await xfile.length() <= 10 * 1024 * 1024) { // 10 MB
+        final bytes = await xfile.readAsBytes();
+        setState(() {
+          previewImageBytes.add(bytes);
+          previewFileNames.add(xfile.name);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Selecione uma imagem com até 10MB.')),
+        );
       }
-      setState(() {
-        previewImageBytes = bytesList;
-        previewFileNames = namesList;
-      });
     }
   }
 
   Future<void> enviarImagens() async {
     final vm = Provider.of<SalaImagemViewModel>(context, listen: false);
+    bool houveFalha = false;
     for (int i = 0; i < previewImageBytes.length; i++) {
-      await vm.uploadImagemBytes(widget.salaId, previewImageBytes[i], previewFileNames[i]);
+      bool ok = await vm.uploadImagemBytes(widget.salaId, previewImageBytes[i], previewFileNames[i]);
+      if (!ok) houveFalha = true;
     }
     setState(() {
       previewImageBytes.clear();
       previewFileNames.clear();
     });
-    if (vm.errorMsg != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.errorMsg!)),
-      );
+
+    if (houveFalha) {
+      if (vm.errorMsg != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(vm.errorMsg!)),
+        );
+      }
+    } else {
+      Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
     }
   }
 
@@ -110,9 +117,9 @@ class _CadastroSalaImagemPageState extends State<CadastroSalaImagemPage> {
                           Icon(Icons.add_photo_alternate_outlined, size: 64, color: Colors.grey[400]),
                           const SizedBox(height: 12),
                           GestureDetector(
-                            onTap: vm.isUploading ? null : selecionarImagens,
+                            onTap: vm.isUploading ? null : selecionarImagem,
                             child: Text(
-                              "Clique para fazer upload",
+                              "Clique para adicionar uma imagem",
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 20,
@@ -120,13 +127,7 @@ class _CadastroSalaImagemPageState extends State<CadastroSalaImagemPage> {
                               ),
                             ),
                           ),
-                          const Text("ou arraste e solte", style: TextStyle(fontSize: 18, color: Colors.black54)),
-                          const SizedBox(height: 8),
                           const Text("PNG, JPG ou JPEG (MAX. 10MB)", style: TextStyle(fontSize: 15, color: Colors.black54)),
-                          const Text(
-                            "Recomendamos pelo menos 5 fotos de alta qualidade",
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
                           const SizedBox(height: 14),
                           if (previewImageBytes.isEmpty)
                             const Text(
@@ -200,24 +201,6 @@ class _CadastroSalaImagemPageState extends State<CadastroSalaImagemPage> {
                           backgroundColor: Colors.lightBlue[600],
                           foregroundColor: Colors.white,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Voltar'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {/* Implemente a lógica do próximo passo */},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[100],
-                          foregroundColor: Colors.blue[900],
-                        ),
-                        child: const Text('Próximo'),
                       ),
                     ],
                   ),
