@@ -5,7 +5,7 @@ import 'package:Wellspace/views/CadastroPage.dart';
 import 'package:Wellspace/views/LoginPage.dart';
 import 'package:Wellspace/views/HomePage.dart';
 import 'package:Wellspace/views/CadastroSalaPage.dart';
-import 'package:Wellspace/views/profile/ProfilePage.dart';
+import 'package:Wellspace/views/ProfilePage.dart';
 
 void main() {
   runApp(const MyApp());
