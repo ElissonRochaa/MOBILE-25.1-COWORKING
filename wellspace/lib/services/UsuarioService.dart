@@ -68,11 +68,21 @@ class UsuarioService {
     await _storage.write(key: 'jwt_token', value: token);
   }
 
+<<<<<<< HEAD
   
   static Future<String?> obterToken() async => await _storage.read(key: 'jwt_token');
 
   
   static Future<String?> obterUsuarioId() async => await _storage.read(key: 'usuario_id');
+=======
+  // Obter token salvo
+  static Future<String?> obterToken() async =>
+      await _storage.read(key: 'jwt_token');
+
+  // Obter usuárioId salvo
+  static Future<String?> obterUsuarioId() async =>
+      await _storage.read(key: 'usuario_id');
+>>>>>>> 280551f482a4b27a66fc4e7fd5dbaf8e20320199
 
  
   static Future<void> logout() async {

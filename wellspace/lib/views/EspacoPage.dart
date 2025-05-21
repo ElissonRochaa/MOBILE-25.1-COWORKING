@@ -1,5 +1,7 @@
 import 'package:Wellspace/views/widgets/sideMenu.dart';
 import 'package:flutter/material.dart';
+import '../models/Sala.dart';
+import '../viewmodels/SalaListViewModel.dart'; // importe seu viewmodel
 
 class EspacosPage extends StatefulWidget {
   const EspacosPage({super.key});
@@ -10,30 +12,23 @@ class EspacosPage extends StatefulWidget {
 
 class _EspacosPageState extends State<EspacosPage> {
   bool exibirMapa = false;
-
-  List<Map<String, dynamic>> espacos = [
-    {
-      'tipo': 'Open Space',
-      'preco': 'R\$ 120/dia',
-      'nome': 'Coworking Central',
-      'endereco': 'Av. Paulista, 1000, São Paulo',
-      'tags': ['Wi-Fi', 'Café', 'Estacionamento', '+2 mais'],
-      'favorito': false,
-    },
-    {
-      'tipo': 'Sala Privativa',
-      'preco': 'R\$ 200/dia',
-      'nome': 'Office Premium',
-      'endereco': 'Av. Faria Lima, 1500, São Paulo',
-      'tags': ['Wi-Fi', 'Recepção', 'Salas de Reunião'],
-      'favorito': true,
-    },
-  ];
-
+  final SalaListViewModel salaListViewModel = SalaListViewModel();
   String searchQuery = '';
 
   @override
+  void initState() {
+    super.initState();
+    salaListViewModel.carregarSalas().then((_) {
+      setState(() {});
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final List<Sala> salasFiltradas = salaListViewModel.salas.where((sala) {
+      return sala.nomeSala.toLowerCase().contains(searchQuery.toLowerCase());
+    }).toList();
+
     return Scaffold(
       drawer: SideMenu(),
       backgroundColor: Colors.grey[100],
@@ -51,9 +46,11 @@ class _EspacosPageState extends State<EspacosPage> {
         children: [
           _buildSearchBar(),
           _buildActionButtons(),
-          _buildEspacosEncontrados(),
+          _buildEspacosEncontrados(salasFiltradas.length),
           Expanded(
-            child: exibirMapa ? _buildMapaPlaceholder() : _buildListaEspacos(),
+            child: exibirMapa
+                ? _buildMapaPlaceholder()
+                : _buildListaEspacos(salasFiltradas),
           ),
         ],
       ),
@@ -125,27 +122,36 @@ class _EspacosPageState extends State<EspacosPage> {
     );
   }
 
-  Widget _buildEspacosEncontrados() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+  Widget _buildEspacosEncontrados(int count) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text('6 espaços encontrados',
-            style: TextStyle(fontWeight: FontWeight.w500)),
+        child: Text('$count espaços encontrados',
+            style: const TextStyle(fontWeight: FontWeight.w500)),
       ),
     );
   }
 
-  Widget _buildListaEspacos() {
+  Widget _buildListaEspacos(List<Sala> salas) {
+    if (salaListViewModel.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (salaListViewModel.errorMessage != null) {
+      return Center(child: Text(salaListViewModel.errorMessage!));
+    }
+    if (salas.isEmpty) {
+      return const Center(child: Text('Nenhum espaço encontrado'));
+    }
     return ListView.builder(
-      itemCount: espacos.length,
+      itemCount: salas.length,
       itemBuilder: (context, index) {
-        return _buildEspacoCard(espacos[index], index);
+        return _buildSalaCard(salas[index]);
       },
     );
   }
 
-  Widget _buildEspacoCard(Map<String, dynamic> espaco, int index) {
+  Widget _buildSalaCard(Sala sala) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -160,7 +166,8 @@ class _EspacosPageState extends State<EspacosPage> {
                 width: double.infinity,
                 color: Colors.grey[300],
                 child: const Center(
-                    child: Icon(Icons.image, size: 40, color: Colors.white)),
+                    child: Icon(Icons.meeting_room,
+                        size: 40, color: Colors.white)),
               ),
               Positioned(
                 top: 8,
@@ -172,23 +179,10 @@ class _EspacosPageState extends State<EspacosPage> {
                     color: Colors.white.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(espaco['tipo'],
-                      style: const TextStyle(fontSize: 12)),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton(
-                  icon: Icon(
-                    espaco['favorito'] ? Icons.favorite : Icons.favorite_border,
-                    color: espaco['favorito'] ? Colors.red : Colors.grey[700],
+                  child: Text(
+                    sala.disponibilidadeSala,
+                    style: const TextStyle(fontSize: 12),
                   ),
-                  onPressed: () {
-                    setState(() {
-                      espacos[index]['favorito'] = !espacos[index]['favorito'];
-                    });
-                  },
                 ),
               ),
             ],
@@ -198,30 +192,28 @@ class _EspacosPageState extends State<EspacosPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(espaco['nome'],
+                Text(sala.nomeSala,
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text(espaco['endereco'],
+                Text(sala.descricao,
                     style: const TextStyle(color: Colors.grey)),
                 const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: -8,
-                  children: List<Widget>.from(
-                    espaco['tags'].map((tag) => Chip(
-                          label: Text(tag),
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                        )),
-                  ),
+                Text(
+                  'Tamanho: ${sala.tamanho}',
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Disponível: ${sala.disponibilidadeDiaSemana} - ${sala.disponibilidadeInicio} até ${sala.disponibilidadeFim}',
+                  style: const TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      espaco['preco'],
+                      'R\$ ${sala.precoHora.toStringAsFixed(2)}/hora',
                       style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
