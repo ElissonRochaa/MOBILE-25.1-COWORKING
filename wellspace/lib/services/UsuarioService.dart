@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:jwt_decode/jwt_decode.dart'; 
+import 'package:jwt_decode/jwt_decode.dart';
 import '../models/Usuario.dart';
 
 class UsuarioService {
@@ -30,7 +30,6 @@ class UsuarioService {
     }
   }
 
-  
   static Future<String> login(String email, String senha) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/login'),
@@ -45,11 +44,9 @@ class UsuarioService {
     }
   }
 
-  
   static Future<void> loginSalvarCredenciais(String email, String senha) async {
     final token = await login(email, senha);
 
-    
     Map<String, dynamic> payload = Jwt.parseJwt(token);
     final usuarioId = payload['usuarioId'] as String?;
 
@@ -63,28 +60,16 @@ class UsuarioService {
     print('Token e usuárioId salvos com sucesso.');
   }
 
- 
   static Future<void> salvarToken(String token) async {
     await _storage.write(key: 'jwt_token', value: token);
   }
 
-<<<<<<< HEAD
-  
-  static Future<String?> obterToken() async => await _storage.read(key: 'jwt_token');
-
-  
-  static Future<String?> obterUsuarioId() async => await _storage.read(key: 'usuario_id');
-=======
-  // Obter token salvo
   static Future<String?> obterToken() async =>
       await _storage.read(key: 'jwt_token');
 
-  // Obter usuárioId salvo
   static Future<String?> obterUsuarioId() async =>
       await _storage.read(key: 'usuario_id');
->>>>>>> 280551f482a4b27a66fc4e7fd5dbaf8e20320199
 
- 
   static Future<void> logout() async {
     await _storage.delete(key: 'jwt_token');
     await _storage.delete(key: 'usuario_id');
