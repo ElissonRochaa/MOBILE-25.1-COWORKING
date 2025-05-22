@@ -1,3 +1,4 @@
+import 'package:Wellspace/views/widgets/SalaCard.dart';
 import 'package:Wellspace/views/widgets/sideMenu.dart';
 import 'package:flutter/material.dart';
 import '../models/Sala.dart';
@@ -152,92 +153,7 @@ class _EspacosPageState extends State<EspacosPage> {
   }
 
   Widget _buildSalaCard(Sala sala) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              Container(
-                height: 130,
-                width: double.infinity,
-                color: Colors.grey[300],
-                child: const Center(
-                    child: Icon(Icons.meeting_room,
-                        size: 40, color: Colors.white)),
-              ),
-              Positioned(
-                top: 8,
-                left: 8,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    sala.disponibilidadeSala,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(sala.nomeSala,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text(sala.descricao,
-                    style: const TextStyle(color: Colors.grey)),
-                const SizedBox(height: 8),
-                Text(
-                  'Tamanho: ${sala.tamanho}',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Disponível: ${sala.disponibilidadeDiaSemana} - ${sala.disponibilidadeInicio} até ${sala.disponibilidadeFim}',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'R\$ ${sala.precoHora.toStringAsFixed(2)}/hora',
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/alugar');
-                      },
-                      child: const Text('Ver Detalhes'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return SalaCard(sala: sala);
   }
 
   Widget _buildMapaPlaceholder() {
