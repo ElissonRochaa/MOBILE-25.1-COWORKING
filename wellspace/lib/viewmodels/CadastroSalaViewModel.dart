@@ -13,7 +13,7 @@ class CadastroSalaViewModel {
   String disponibilidadeDiaSemana = '';
   TimeOfDay disponibilidadeInicio = TimeOfDay(hour: 8, minute: 0);
   TimeOfDay disponibilidadeFim = TimeOfDay(hour: 18, minute: 0);
-  String disponibilidadeSala = 'DISPONIVEL'; // Valor padrão válido
+  String disponibilidadeSala = 'DISPONIVEL'; 
   String usuarioId = '';
 
   void _showSnackBar(BuildContext context, String message, {bool isError = false}) {
@@ -37,24 +37,23 @@ class CadastroSalaViewModel {
     }
   }
 
-  Future<void> cadastrarSala(BuildContext context) async {
+  
+  Future<Sala?> cadastrarSala(BuildContext context) async {
     print('[cadastrarSala] Iniciando cadastro da sala');
 
     final carregou = await carregarUsuarioId();
     if (!carregou) {
       _showSnackBar(context, 'Usuário não autenticado. Faça login novamente.', isError: true);
       print('[cadastrarSala] Falha: usuário não autenticado');
-      return;
+      return null;
     }
     print('[cadastrarSala] usuarioId para cadastro: $usuarioId');
-
-    // Validações extras no ViewModel se desejar (opcional)
 
     final preco = double.tryParse(precoHora.replaceAll(',', '.')) ?? 0;
     if (preco <= 0) {
       _showSnackBar(context, 'Informe um preço por hora válido e maior que zero.', isError: true);
       print('[cadastrarSala] Falha: preço inválido');
-      return;
+      return null;
     }
 
     final String inicioStr =
@@ -62,15 +61,14 @@ class CadastroSalaViewModel {
     final String fimStr =
         '${disponibilidadeFim.hour.toString().padLeft(2, '0')}:${disponibilidadeFim.minute.toString().padLeft(2, '0')}:00';
 
-    final dispoValida = ['DISPONIVEL', 'INDISPONIVEL'].contains(disponibilidadeSala);
+    final dispoValida = ['DISPONIVEL', 'INDISPONIVEL', 'RESERVADA'].contains(disponibilidadeSala);
     if (!dispoValida) {
       _showSnackBar(context, 'Disponibilidade da sala inválida.', isError: true);
       print('[cadastrarSala] Falha: disponibilidade inválida');
-      return;
+      return null;
     }
 
     final sala = Sala(
-      id: '',
       nomeSala: nomeSala,
       descricao: descricao,
       tamanho: tamanho,
@@ -86,16 +84,19 @@ class CadastroSalaViewModel {
 
     try {
       final salaCadastrada = await SalaService.cadastrarSala(sala);
-      if (salaCadastrada != null) {
+      if (salaCadastrada != null && salaCadastrada.id != null && salaCadastrada.id!.isNotEmpty) {
         _showSnackBar(context, 'Sala cadastrada com sucesso!');
-        print('[cadastrarSala] Sucesso no cadastro');
+        print('[cadastrarSala] Sucesso no cadastro: salaId=${salaCadastrada.id}');
+        return salaCadastrada;
       } else {
         _showSnackBar(context, 'Erro ao cadastrar sala', isError: true);
         print('[cadastrarSala] Erro: salaCadastrada retornou null');
+        return null;
       }
     } catch (e) {
       _showSnackBar(context, 'Erro na comunicação com o servidor', isError: true);
       print('[cadastrarSala] Exception: $e');
+      return null;
     }
   }
 }

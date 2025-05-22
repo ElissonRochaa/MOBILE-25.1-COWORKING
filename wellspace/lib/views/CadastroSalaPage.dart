@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../viewmodels/CadastroSalaViewmodel.dart';
+import '../viewmodels/SalaImagemViewModel.dart';
+import 'CadastroSalaImagemPage.dart';
+import '../views/widgets/sideMenu.dart';
 
 class CadastroSalaPage extends StatefulWidget {
   @override
@@ -16,8 +20,10 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
   @override
   void initState() {
     super.initState();
-    _controllerHorarioInicio = TextEditingController(text: _formatTimeOfDay(viewModel.disponibilidadeInicio));
-    _controllerHorarioFim = TextEditingController(text: _formatTimeOfDay(viewModel.disponibilidadeFim));
+    _controllerHorarioInicio = TextEditingController(
+        text: _formatTimeOfDay(viewModel.disponibilidadeInicio));
+    _controllerHorarioFim = TextEditingController(
+        text: _formatTimeOfDay(viewModel.disponibilidadeFim));
   }
 
   @override
@@ -63,7 +69,22 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
     final form = formKey.currentState;
     if (form != null && form.validate()) {
       form.save();
-      await viewModel.cadastrarSala(context);
+      final salaCadastrada = await viewModel.cadastrarSala(context);
+      if (salaCadastrada != null && salaCadastrada.id != null && salaCadastrada.id!.isNotEmpty) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider(
+              create: (_) => SalaImagemViewModel(),
+              child: CadastroSalaImagemPage(salaId: salaCadastrada.id!),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao cadastrar sala!')),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, preencha todos os campos obrigatórios.')),
@@ -71,9 +92,14 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
     }
   }
 
+  void _voltarParaHome() {
+    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: SideMenu(),
       appBar: AppBar(
         title: const Text('Cadastro de Sala'),
       ),
@@ -137,7 +163,7 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                   helperText: 'Selecione o status de disponibilidade',
                 ),
                 value: viewModel.disponibilidadeSala.isNotEmpty ? viewModel.disponibilidadeSala : null,
-                items: ['DISPONIVEL', 'INDISPONIVEL']
+                items: ['DISPONIVEL', 'INDISPONIVEL', 'RESERVADA']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
                 onChanged: (value) {
@@ -226,13 +252,36 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
 
               const SizedBox(height: 32),
 
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.save),
-                  label: const Text('Salvar Sala'),
-                  onPressed: _salvarSala,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.arrow_back),
+                      label: const Text('Voltar para Home'),
+                      onPressed: _voltarParaHome,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.blue[700],
+                        side: BorderSide(color: Colors.blue[700]!),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.save),
+                      label: const Text('Próximo'),
+                      onPressed: _salvarSala,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[700], // Azul forte
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

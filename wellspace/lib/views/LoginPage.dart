@@ -23,14 +23,12 @@ class _LoginPageState extends State<LoginPage> {
       try {
         print('Iniciando requisição de login...');
 
-        final response = await UsuarioService.login(_email, _senha);
+    
+        await UsuarioService.loginSalvarCredenciais(_email, _senha);
 
-        print('Resposta bruta do servidor: $response');
-
-        if (response is String) {
-          String token = response;
-          await UsuarioService.salvarToken(token);
-
+     
+        final token = await UsuarioService.obterToken();
+        if (token != null) {
           Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
           print('Decoded Token: $decodedToken');
 
@@ -40,10 +38,8 @@ class _LoginPageState extends State<LoginPage> {
 
           Navigator.pushReplacementNamed(context, '/home');
         } else {
-          print('Erro no login: Token não encontrado');
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Erro no login: Token não encontrado')),
+            const SnackBar(content: Text('Erro no login: Token não encontrado')),
           );
         }
       } catch (e) {

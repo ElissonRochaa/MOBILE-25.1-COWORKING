@@ -4,6 +4,7 @@ import 'package:Wellspace/viewmodels/SalaListViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../views/widgets/sideMenu.dart';
+import 'package:Wellspace/services/SalaImagesService.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -141,13 +142,14 @@ class _FeaturedSpacesSectionState extends State<FeaturedSpacesSection> {
   void initState() {
     super.initState();
     salaListViewModel.carregarSalas().then((_) {
-      setState(() {}); // Atualiza a UI após carregar as salas
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Seleciona as primeiras 5 salas como destaques (você pode adaptar esse filtro)
     List<Sala> destaques = salaListViewModel.salas.length > 5
         ? salaListViewModel.salas.sublist(0, 5)
         : salaListViewModel.salas;
@@ -164,111 +166,37 @@ class _FeaturedSpacesSectionState extends State<FeaturedSpacesSection> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
-              TextButton(onPressed: () {}, child: const Text('Ver todos')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/espacos');
+                  },
+                  child: const Text('Ver todos')),
             ],
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 260,
+            height: 340,
             child: salaListViewModel.isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: destaques.length,
-                    itemBuilder: (context, index) {
-                      final espaco = destaques[index];
-                      return SpaceCard(
-                        nome: espaco.nomeSala,
-                        localizacao: espaco
-                            .descricao, // pode ajustar para endereço se tiver
-                        preco:
-                            'R\$ ${espaco.precoHora.toStringAsFixed(2)}/hora',
-                        avaliacao: 4, // ajustar se tiver avaliação no modelo
-                        tipo: espaco
-                            .disponibilidadeSala, // exemplo de campo para tipo
-                        onTap: () {
-                          Navigator.pushNamed(context, '/alugar',
-                              arguments: espaco);
+                : destaques.isEmpty
+                    ? const Center(
+                        child: Text('Nenhum espaço em destaque encontrado.'))
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: destaques.length,
+                        itemBuilder: (context, index) {
+                          final espaco = destaques[index];
+                          return SizedBox(
+                            width: 300,
+                            child: SalaCard(
+                              key: ValueKey(espaco.id),
+                              sala: espaco,
+                            ),
+                          );
                         },
-                      );
-                    },
-                  ),
+                      ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class SpaceCard extends StatelessWidget {
-  final String nome;
-  final String localizacao;
-  final String preco;
-  final double avaliacao;
-  final String tipo;
-  final VoidCallback? onTap;
-
-  const SpaceCard({
-    Key? key,
-    required this.nome,
-    required this.localizacao,
-    required this.preco,
-    required this.avaliacao,
-    required this.tipo,
-    this.onTap,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        elevation: 3,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.symmetric(horizontal: 8),
-        child: Container(
-          width: 200,
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Center(
-                    child: Icon(Icons.image, size: 40, color: Colors.white)),
-              ),
-              const SizedBox(height: 8),
-              Text(nome, style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(localizacao, style: const TextStyle(fontSize: 12)),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  const Icon(Icons.star, size: 14, color: Colors.amber),
-                  const SizedBox(width: 4),
-                  Text('$avaliacao', style: const TextStyle(fontSize: 12)),
-                  const Spacer(),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(tipo, style: const TextStyle(fontSize: 10)),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Text(preco,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.green)),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -290,22 +218,33 @@ class HowItWorksSection extends StatelessWidget {
           SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _StepItem(
-                icon: Icons.search,
-                title: 'Busque',
-                description: 'Encontre o espaço ideal para suas necessidades.',
+              Expanded(
+                child: _StepItem(
+                  icon: Icons.search,
+                  title: 'Busque',
+                  description:
+                      'Encontre o espaço ideal para suas necessidades.',
+                ),
               ),
-              _StepItem(
-                icon: Icons.calendar_today,
-                title: 'Reserve',
-                description:
-                    'Escolha a data e horário e faça sua reserva em poucos cliques.',
+              SizedBox(width: 12),
+              Expanded(
+                child: _StepItem(
+                  icon: Icons.calendar_today,
+                  title: 'Reserve',
+                  description:
+                      'Escolha a data e horário e faça sua reserva em poucos cliques.',
+                ),
               ),
-              _StepItem(
-                icon: Icons.work,
-                title: 'Trabalhe',
-                description: 'Aproveite um ambiente profissional e produtivo.',
+              SizedBox(width: 12),
+              Expanded(
+                child: _StepItem(
+                  icon: Icons.work,
+                  title: 'Trabalhe',
+                  description:
+                      'Aproveite um ambiente profissional e produtivo.',
+                ),
               ),
             ],
           ),
@@ -329,22 +268,24 @@ class _StepItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.blue.shade50,
-            child: Icon(icon, size: 30, color: Colors.blue),
-          ),
-          const SizedBox(height: 8),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(description,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, color: Colors.black54)),
-        ],
-      ),
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 30,
+          backgroundColor: Colors.blue.shade50,
+          child: Icon(icon, size: 30, color: Colors.blue),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        Text(description,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, color: Colors.black54)),
+      ],
     );
   }
 }
@@ -367,6 +308,7 @@ class CTABanner extends StatelessWidget {
             'Pronto para encontrar seu espaço ideal?',
             style: TextStyle(
                 color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           const Text(
@@ -387,6 +329,236 @@ class CTABanner extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class SalaCard extends StatefulWidget {
+  final Sala sala;
+
+  const SalaCard({super.key, required this.sala});
+
+  @override
+  State<SalaCard> createState() => _SalaCardState();
+}
+
+class _SalaCardState extends State<SalaCard> {
+  String? imageUrl;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImagem();
+  }
+
+  @override
+  void didUpdateWidget(covariant SalaCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.sala.id != oldWidget.sala.id) {
+      _loadImagem();
+    }
+  }
+
+  Future<void> _loadImagem() async {
+    if (!mounted) return;
+    setState(() {
+      isLoading = true;
+      imageUrl = null;
+    });
+    try {
+      final String idParaServico = widget.sala.id.toString();
+      print('[SalaCard] Sala ID sendo usada para a requisição: $idParaServico');
+
+      final List<String> urlsRecebidas =
+          await SalaImagemService.listarImagensPorSala(idParaServico);
+
+      print('[SalaCard] URLs recebidas do serviço: $urlsRecebidas');
+
+      if (mounted) {
+        setState(() {
+          if (urlsRecebidas.isNotEmpty) {
+            imageUrl = urlsRecebidas.first;
+          } else {
+            imageUrl = null;
+            print(
+                '[SalaCard] Nenhuma URL de imagem recebida para a sala ID: $idParaServico');
+          }
+          print('[SalaCard] URL da imagem definida para o card: $imageUrl');
+          isLoading = false;
+        });
+      }
+    } catch (e, stackTrace) {
+      print('[SalaCard] Erro ao carregar imagem no SalaCard: $e');
+      print('[SalaCard] Stack Trace: $stackTrace');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          imageUrl = null;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/alugar', arguments: widget.sala);
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 3,
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              alignment: Alignment.bottomLeft,
+              children: [
+                Container(
+                  height: 150,
+                  width: double.infinity,
+                  color: Colors.grey[200],
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : imageUrl != null && imageUrl!.isNotEmpty
+                          ? Image.network(
+                              imageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                print(
+                                    '[SalaCard] Erro ao carregar imagem da rede ($imageUrl): $error');
+                                return Center(
+                                  child: Icon(
+                                    Icons.broken_image,
+                                    size: 50,
+                                    color: Colors.grey[500],
+                                  ),
+                                );
+                              },
+                              loadingBuilder: (BuildContext context,
+                                  Widget child,
+                                  ImageChunkEvent? loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                );
+                              },
+                            )
+                          : Center(
+                              child: Icon(
+                                Icons.meeting_room_outlined,
+                                size: 50,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                ),
+                if (widget.sala.disponibilidadeSala.isNotEmpty)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        widget.sala.disponibilidadeSala,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.sala.nomeSala,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.sala.descricao,
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                      fontSize: 13,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.aspect_ratio_outlined,
+                          size: 15, color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text(
+                        widget.sala.tamanho,
+                        style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_today,
+                          size: 16, color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          '${widget.sala.disponibilidadeDiaSemana} (${widget.sala.disponibilidadeInicio} - ${widget.sala.disponibilidadeFim})',
+                          style:
+                              TextStyle(color: Colors.grey[700], fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'R\$ ${widget.sala.precoHora.toStringAsFixed(2)}/hora',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
