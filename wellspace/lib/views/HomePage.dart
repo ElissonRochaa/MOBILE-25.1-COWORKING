@@ -405,7 +405,7 @@ class _SalaCardState extends State<SalaCard> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, '/alugar', arguments: widget.sala);
+        Navigator.pushNamed(context, '/alugar', arguments: widget.sala.id);
       },
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
