@@ -74,6 +74,44 @@ class SalaService {
     }
   }
 
+  static Future<Sala?> buscarSalaPorId(String id) async {
+    try {
+      final token = await _getTokenOrThrow();
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/salas/buscar-sala/$id'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(
+          '[SalaService] buscarSalaPorId status: ${response.statusCode} for ID $id');
+
+      if (response.statusCode == 200) {
+        if (response.body.isNotEmpty) {
+          print('[SalaService] Sala encontrada com sucesso.');
+          return Sala.fromJson(json.decode(response.body));
+        } else {
+          print(
+              '[SalaService] Sala encontrada (200), mas corpo da resposta vazio.');
+          return null;
+        }
+      } else if (response.statusCode == 404) {
+        print(
+            '[SalaService] Sala com ID $id não encontrada: ${response.statusCode}');
+        return null;
+      } else {
+        print(
+            '[SalaService] Erro ao buscar sala por ID $id: ${response.statusCode} – ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('[SalaService] Exceção ao buscar sala por ID $id: $e');
+      return null;
+    }
+  }
+
   static Future<bool> deletarSala(String id) async {
     try {
       final token = await _getTokenOrThrow();

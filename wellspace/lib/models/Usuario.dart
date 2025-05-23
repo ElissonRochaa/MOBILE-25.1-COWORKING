@@ -1,10 +1,10 @@
 class Usuario {
   String nome;
   String email;
-  String senha;
-  DateTime dataNascimento;
+  String? senha;
+  DateTime? dataNascimento;
   String fotoPerfil;
-  bool integridade; 
+  bool integridade;
 
   Usuario({
     required this.nome,
@@ -15,15 +15,27 @@ class Usuario {
     this.integridade = false,
   });
 
-
   Map<String, dynamic> toJson() {
     return {
       'nome': nome,
       'email': email,
-      'senha': senha, 
-      'dataNascimento': dataNascimento.toIso8601String(),
+      'senha': senha,
+      'dataNascimento': dataNascimento?.toIso8601String(),
       'fotoPerfil': fotoPerfil,
       'integridade': integridade,
     };
+  }
+
+  factory Usuario.fromJson(Map<String, dynamic> json) {
+    return Usuario(
+      nome: json['nome'] ?? '',
+      email: json['email'] ?? '',
+      senha: json['senha'],
+      dataNascimento: json['dataNascimento'] != null
+          ? DateTime.tryParse(json['dataNascimento'])
+          : null,
+      fotoPerfil: json['fotoPerfil'] ?? '',
+      integridade: json['integridade'] ?? false,
+    );
   }
 }

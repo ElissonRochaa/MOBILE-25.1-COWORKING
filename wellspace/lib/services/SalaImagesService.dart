@@ -41,7 +41,6 @@ class SalaImagemService {
   }
 
   static Future<List<String>> listarImagensPorSala(String salaId) async {
-    // Verifica se salaId não é nulo ou vazio antes de fazer a chamada
     if (salaId.isEmpty) {
       print('Erro: ID da sala está vazio. Não é possível listar imagens.');
       return [];
@@ -51,24 +50,21 @@ class SalaImagemService {
       final token = await _storage.read(key: 'jwt_token');
       final uri = Uri.parse('$_baseUrl/imagens/sala/$salaId');
 
-      print(
-          'Listando imagens para Sala ID: $salaId, URI: $uri'); // Log para depuração
+      print('Listando imagens para Sala ID: $salaId, URI: $uri');
 
       final response = await http.get(
         uri,
         headers: {
-          'Content-Type':
-              'application/json', // Adicionado para clareza, embora GET não tenha corpo
+          'Content-Type': 'application/json',
           if (token != null && token.isNotEmpty)
             'Authorization': 'Bearer $token',
         },
       );
 
       print(
-          'Resposta do serviço de listar imagens: Status ${response.statusCode}, Corpo: ${response.body}'); // Log detalhado
+          'Resposta do serviço de listar imagens: Status ${response.statusCode}, Corpo: ${response.body}');
 
       if (response.statusCode == 200) {
-        // Verifica se o corpo da resposta não está vazio antes de decodificar
         if (response.body.isEmpty) {
           print('Corpo da resposta vazio ao listar imagens.');
           return [];
@@ -76,16 +72,10 @@ class SalaImagemService {
 
         final List<dynamic> listaJson = jsonDecode(response.body);
 
-        // Se a listaJson estiver vazia, retorna lista vazia.
         if (listaJson.isEmpty) {
           print('Nenhuma imagem encontrada para a sala $salaId.');
           return [];
         }
-
-        // Assumindo que cada item na lista é um Map e contém a chave 'imagemUrl'
-        // conforme a estrutura JSON que você compartilhou anteriormente:
-        // [ { "id": "...", "imagemUrl": "..." }, ... ]
-        // Se a chave for diferente (ex: "imagem"), ajuste abaixo.
         return listaJson
             .map((item) {
               if (item is Map<String, dynamic> &&
@@ -93,21 +83,20 @@ class SalaImagemService {
                 return item['imagemUrl'] as String?;
               }
               print('Item inválido ou sem chave "imagemUrl": $item');
-              return null; // Retorna null para itens que não correspondem ao formato esperado
+              return null;
             })
-            .where((url) =>
-                url != null && url.isNotEmpty) // Filtra URLs nulas ou vazias
-            .cast<String>() // Garante que a lista final é List<String>
+            .where((url) => url != null && url.isNotEmpty)
+            .cast<String>()
             .toList();
       } else {
         print(
             'Erro ao listar imagens: ${response.statusCode} - ${response.body}');
-        return []; // Retorna lista vazia em caso de erro
+        return [];
       }
     } catch (e, stackTrace) {
       print('Exceção ao listar imagens: $e');
       print('Stack Trace da exceção: $stackTrace');
-      return []; // Retorna lista vazia em caso de exceção
+      return [];
     }
   }
 }
