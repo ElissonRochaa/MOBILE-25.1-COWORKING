@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:Wellspace/viewmodels/UsuarioDetailViewModel.dart';
 import 'widgets/sideMenu.dart';
 import 'widgets/ProfileCard.dart';
 import 'widgets/TabBar.dart';
@@ -16,6 +18,17 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int _selectedTab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (mounted) {
+        Provider.of<UsuarioDetailViewModel>(context, listen: false)
+            .carregarUsuarioPorId();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
