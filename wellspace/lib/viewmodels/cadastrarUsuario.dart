@@ -1,3 +1,4 @@
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import '../models/Usuario.dart';
 import '../services/UsuarioService.dart';
@@ -9,7 +10,7 @@ class CadastroViewModel {
   String senha = '';
   String confirmarSenha = '';
   DateTime dataNascimento = DateTime.now();
-  String fotoPerfil = '';
+  XFile? fotoPerfil;
 
   String? validarSenhas() {
     if (senha != confirmarSenha) {
@@ -38,17 +39,21 @@ class CadastroViewModel {
         return;
       }
 
-      Usuario usuario = Usuario(
-        nome: nome,
-        email: email,
-        senha: senha,
-        dataNascimento: dataNascimento,
-        fotoPerfil: fotoPerfil,
-        integridade: false,
-      );
+      if (fotoPerfil == null) {
+        _showSnackBar(context, 'Por favor, selecione uma foto de perfil.',
+            isError: true);
+        return;
+      }
 
       try {
-        bool success = await UsuarioService.cadastrarUsuario(usuario);
+        bool success = await UsuarioService.cadastrarUsuarioComFoto(
+          nome: nome,
+          email: email,
+          senha: senha,
+          dataNascimento: dataNascimento,
+          fotoPerfil: fotoPerfil!,
+          integridade: false,
+        );
 
         if (success) {
           _showSnackBar(context, 'Cadastro bem-sucedido!');

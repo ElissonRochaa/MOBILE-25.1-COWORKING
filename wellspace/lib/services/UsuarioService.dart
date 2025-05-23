@@ -3,25 +3,52 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decode/jwt_decode.dart';
 import '../models/Usuario.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
 
 class UsuarioService {
   static const String baseUrl = 'http://localhost:8080';
   static final _storage = const FlutterSecureStorage();
 
-  // Cadastro de usuário
-  static Future<bool> cadastrarUsuario(Usuario usuario) async {
+  static Future<bool> cadastrarUsuarioComFoto({
+    required String nome,
+    required String email,
+    required String senha,
+    required DateTime dataNascimento,
+    required XFile fotoPerfil,
+    bool integridade = false,
+  }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/registrar'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(usuario.toJson()),
+      var uri = Uri.parse('$baseUrl/auth/registrar');
+      var request = http.MultipartRequest('POST', uri);
+
+      request.fields['nome'] = nome;
+      request.fields['email'] = email;
+      request.fields['senha'] = senha;
+      String ano = dataNascimento.year.toString();
+      String mes = dataNascimento.month.toString().padLeft(2, '0');
+      String dia = dataNascimento.day.toString().padLeft(2, '0');
+      request.fields['dataNascimento'] = '$ano-$mes-$dia';
+      request.fields['integridade'] = integridade.toString();
+
+      var bytes = await fotoPerfil.readAsBytes();
+
+      var multipartFile = http.MultipartFile.fromBytes(
+        'fotoPerfil',
+        bytes,
+        filename: fotoPerfil.name,
       );
+
+      request.files.add(multipartFile);
+
+      var response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         print('Cadastro realizado com sucesso!');
         return true;
       } else {
-        print('Erro no cadastro: ${response.body}');
+        var respStr = await response.stream.bytesToString();
+        print('Erro no cadastro: $respStr');
         return false;
       }
     } catch (e) {
@@ -73,5 +100,30 @@ class UsuarioService {
   static Future<void> logout() async {
     await _storage.delete(key: 'jwt_token');
     await _storage.delete(key: 'usuario_id');
+  }
+
+  static Future<Usuario> buscarUsuarioPorId() async {
+    final token = await obterToken();
+    final usuarioId = await obterUsuarioId();
+
+    if (token == null || usuarioId == null) {
+      throw Exception(
+          'Token ou usuárioId não encontrados. Faça login novamente.');
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/usuario/buscar/$usuarioId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final jsonBody = json.decode(response.body);
+      return Usuario.fromJson(jsonBody);
+    } else {
+      throw Exception('Erro ao buscar usuário: ${response.body}');
+    }
   }
 }

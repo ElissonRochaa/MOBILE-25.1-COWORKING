@@ -1,13 +1,14 @@
 import 'package:Wellspace/viewmodels/SalaDetailViewModel.dart';
 import 'package:Wellspace/viewmodels/SalaImagemViewModel.dart';
 import 'package:Wellspace/viewmodels/SalaListViewModel.dart';
+import 'package:Wellspace/viewmodels/UsuarioDetailViewModel.dart';
 import 'package:Wellspace/views/AlugarPage.dart';
 import 'package:Wellspace/views/CadastroPage.dart';
 import 'package:Wellspace/views/CadastroSalaPage.dart';
 import 'package:Wellspace/views/EspacoPage.dart';
 import 'package:Wellspace/views/HomePage.dart';
 import 'package:Wellspace/views/LoginPage.dart';
-import 'package:Wellspace/views/profile/ProfilePage.dart';
+import 'package:Wellspace/views/ProfilePage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SalaDetailViewModel()),
         ChangeNotifierProvider(create: (_) => SalaImagemViewModel()),
         ChangeNotifierProvider(create: (_) => SalaListViewModel()),
+        ChangeNotifierProvider(create: (_) => UsuarioDetailViewModel()),
       ],
       child: MaterialApp(
         title: 'Wellspace',

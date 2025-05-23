@@ -1,9 +1,9 @@
 import 'package:Wellspace/viewmodels/SalaDetailViewModel.dart';
 import 'package:Wellspace/viewmodels/SalaImagemViewModel.dart';
-import 'package:Wellspace/views/widgets/sideMenu.dart'; // Seu SideMenu
+import 'package:Wellspace/views/widgets/sideMenu.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Wellspace/models/Sala.dart'; // Seu modelo Sala
+import 'package:Wellspace/models/Sala.dart';
 
 // Classe Alugapage agora aceita salaId e o passa para CoworkingPage
 class Alugapage extends StatelessWidget {
@@ -47,7 +47,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
   Future<void> _fetchSalaData() async {
     _salaDetailViewModel.limparDetalhesSala();
     await _salaDetailViewModel.carregarSalaPorId(widget.salaId);
-    // Somente listar imagens se a sala for carregada com sucesso
     if (_salaDetailViewModel.sala != null) {
       await _salaImagemViewModel.listarImagensPorSala(widget.salaId);
     }
@@ -55,8 +54,7 @@ class _CoworkingPageState extends State<CoworkingPage> {
 
   double get currentPricePerHour {
     final sala = _salaDetailViewModel.sala;
-    // Usa precoHora do modelo Sala
-    return sala?.precoHora ?? 0.0; // Retorna 0.0 se não disponível
+    return sala?.precoHora ?? 0.0;
   }
 
   double get totalPrice {
@@ -94,9 +92,7 @@ class _CoworkingPageState extends State<CoworkingPage> {
           initialTime =
               TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
         }
-      } catch (e) {
-        // Usa o default se o parse falhar
-      }
+      } catch (e) {}
     }
     initialTime = isStart
         ? (_startTime ?? initialTime)
@@ -144,7 +140,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
       appBar: AppBar(
         title: Consumer<SalaDetailViewModel>(
           builder: (context, viewModel, child) {
-            // Usa nomeSala do modelo Sala
             return Text(viewModel.sala?.nomeSala ?? 'WellSpace');
           },
         ),
@@ -289,9 +284,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
                       style: const TextStyle(
                           fontSize: 24, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  // O campo endereco não existe no modelo Sala fornecido.
-                  // Você pode adicionar informações de localização se desejar, mas virão de outros campos ou serão fixas.
-                  // Ex: Text('Localização: A ser definida', style: const TextStyle(color: Colors.grey)),
                   Row(
                     children: [
                       const Icon(Icons.square_foot_outlined,
@@ -302,7 +294,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  // Campos de avaliação (avaliacaoMedia, numeroAvaliacoes) não existem. Removido.
                   const SizedBox(height: 16),
                   const Text('Sobre este espaço',
                       style: TextStyle(fontWeight: FontWeight.bold)),
@@ -310,7 +301,7 @@ class _CoworkingPageState extends State<CoworkingPage> {
                       ? sala.descricao
                       : 'Nenhuma descrição disponível.'),
                   const SizedBox(height: 16),
-                  _buildScheduleCard(sala), // Passar o objeto sala inteiro
+                  _buildScheduleCard(sala),
                   const SizedBox(height: 16),
                   const Text('Localização no Mapa',
                       style: TextStyle(fontWeight: FontWeight.bold)),
@@ -338,8 +329,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
                   const SizedBox(height: 16),
                   const Text('Preços',
                       style: TextStyle(fontWeight: FontWeight.bold)),
-                  // ToggleButtons para dia/mês não fazem sentido sem precoPorDia/Mes
-                  // Mantendo apenas a opção "Por Hora"
                   const SizedBox(height: 8),
                   Container(
                     width: double.infinity,
@@ -363,7 +352,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF004AAD))),
                         const SizedBox(height: 4),
-                        // O campo disponibilidadeSala pode ser usado aqui
                         Text('Status: ${sala.disponibilidadeSala}',
                             style: TextStyle(
                                 fontSize: 12,
@@ -378,7 +366,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Card de Comparativo de Preços removido pois não há precoDia/Mes
                 ],
               ),
             ),
@@ -400,7 +387,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
       'Dom': 'Domingo'
     };
 
-    // Parse da string disponibilidadeDiaSemana (ex: "Seg,Ter,Qua")
     final diasDisponiveis = sala.disponibilidadeDiaSemana
         .split(',')
         .map((dia) => dia.trim())
