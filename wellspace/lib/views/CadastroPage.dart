@@ -24,10 +24,7 @@ class _CadastroPageState extends State<CadastroPage> {
     super.initState();
     // Inicializa o controller com o valor do ViewModel
     _dataNascimentoController = TextEditingController(
-      text: widget.viewModel.dataNascimento
-          .toLocal()
-          .toString()
-          .split(' ')[0],
+      text: widget.viewModel.dataNascimento.toLocal().toString().split(' ')[0],
     );
   }
 
@@ -42,7 +39,7 @@ class _CadastroPageState extends State<CadastroPage> {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
-        widget.viewModel.fotoPerfil = image.path;
+        widget.viewModel.fotoPerfil = image; // image é do tipo XFile
       });
     }
   }
@@ -197,7 +194,8 @@ class _CadastroPageState extends State<CadastroPage> {
                       },
                       onSaved: (value) {
                         if (value != null && value.isNotEmpty) {
-                          widget.viewModel.dataNascimento = DateTime.parse(value);
+                          widget.viewModel.dataNascimento =
+                              DateTime.parse(value);
                         }
                       },
                     ),
@@ -213,25 +211,27 @@ class _CadastroPageState extends State<CadastroPage> {
                           shape: BoxShape.circle,
                           color: Colors.grey[300],
                         ),
-                        child: widget.viewModel.fotoPerfil.isEmpty
+                        child: widget.viewModel.fotoPerfil == null
                             ? const Icon(Icons.camera_alt, color: Colors.white)
                             : (kIsWeb
-                                ? const Icon(Icons.camera_alt,
-                                    color: Colors.white)
-                                : io.File(widget.viewModel.fotoPerfil)
-                                        .existsSync()
-                                    ? ClipOval(
-                                        child: Image.file(
-                                          io.File(widget.viewModel.fotoPerfil),
-                                          fit: BoxFit.cover,
-                                          height: 100,
-                                          width: 100,
-                                        ),
-                                      )
-                                    : const Icon(Icons.camera_alt,
-                                        color: Colors.white)),
+                                ? Image.network(
+                                    widget.viewModel.fotoPerfil!.path,
+                                    fit: BoxFit.cover,
+                                    height: 100,
+                                    width: 100,
+                                  )
+                                : ClipOval(
+                                    child: Image.file(
+                                      io.File(
+                                          widget.viewModel.fotoPerfil!.path),
+                                      fit: BoxFit.cover,
+                                      height: 100,
+                                      width: 100,
+                                    ),
+                                  )),
                       ),
                     ),
+
                     const SizedBox(height: 16),
 
                     SizedBox(

@@ -18,20 +18,65 @@ class _SalaCardState extends State<SalaCard> {
   @override
   void initState() {
     super.initState();
-    _loadImagem();
+    if (widget.sala.id != null && widget.sala.id!.isNotEmpty) {
+      _loadImagem();
+    } else {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          imageUrl = null;
+        });
+      }
+      print(
+          '[SalaCard] ID da sala é nulo ou vazio no initState. Nenhuma imagem será carregada.');
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant SalaCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.sala.id != oldWidget.sala.id) {
+      if (widget.sala.id != null && widget.sala.id!.isNotEmpty) {
+        _loadImagem();
+      } else {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+            imageUrl = null;
+          });
+        }
+        print(
+            '[SalaCard] ID da sala atualizado para nulo ou vazio. Nenhuma imagem será carregada.');
+      }
+    }
   }
 
   Future<void> _loadImagem() async {
-    setState(() {
-      isLoading = true;
-    });
+    if (!mounted || widget.sala.id == null || widget.sala.id!.isEmpty) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          imageUrl = null;
+        });
+      }
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
+
     try {
-      final String idParaServico = widget.sala.id.toString();
-      print('[SalaCard] Sala ID sendo usada para a requisição: $idParaServico');
+      final String idParaServico = widget.sala.id!;
+      print(
+          '[SalaCard] Sala ID ($idParaServico) sendo usada para a requisição de imagem.');
+
       final List<String> urlsRecebidas =
           await SalaImagemService.listarImagensPorSala(idParaServico);
 
-      print('[SalaCard] URLs recebidas do serviço: $urlsRecebidas');
+      print('[SalaCard] URLs recebidas para ($idParaServico): $urlsRecebidas');
 
       if (mounted) {
         setState(() {
@@ -39,15 +84,12 @@ class _SalaCardState extends State<SalaCard> {
             imageUrl = urlsRecebidas.first;
           } else {
             imageUrl = null;
-            print(
-                '[SalaCard] Nenhuma URL de imagem recebida para a sala ID: $idParaServico');
           }
-          print('[SalaCard] URL da imagem definida para o card: $imageUrl');
           isLoading = false;
         });
       }
     } catch (e, stackTrace) {
-      print('[SalaCard] Erro ao carregar imagem no SalaCard: $e');
+      print('[SalaCard] Erro ao carregar imagem para (${widget.sala.id}): $e');
       print('[SalaCard] Stack Trace: $stackTrace');
       if (mounted) {
         setState(() {
@@ -75,7 +117,8 @@ class _SalaCardState extends State<SalaCard> {
                 width: double.infinity,
                 color: Colors.grey[300],
                 child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2.5))
                     : imageUrl != null && imageUrl!.isNotEmpty
                         ? Image.network(
                             imageUrl!,
@@ -85,7 +128,7 @@ class _SalaCardState extends State<SalaCard> {
                                   '[SalaCard] Erro ao carregar imagem da rede ($imageUrl): $error');
                               return Center(
                                 child: Icon(
-                                  Icons.broken_image,
+                                  Icons.broken_image_outlined,
                                   size: 40,
                                   color: Colors.grey[600],
                                 ),
@@ -96,6 +139,7 @@ class _SalaCardState extends State<SalaCard> {
                               if (loadingProgress == null) return child;
                               return Center(
                                 child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
                                   value: loadingProgress.expectedTotalBytes !=
                                           null
                                       ? loadingProgress.cumulativeBytesLoaded /
@@ -107,32 +151,42 @@ class _SalaCardState extends State<SalaCard> {
                           )
                         : Center(
                             child: Icon(
-                              Icons.meeting_room,
+                              widget.sala.id == null || widget.sala.id!.isEmpty
+                                  ? Icons.image_not_supported_outlined
+                                  : Icons.meeting_room_outlined,
                               size: 40,
                               color: Colors.grey[600],
                             ),
                           ),
               ),
-              Positioned(
-                top: 8,
-                left: 8,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    widget.sala.disponibilidadeSala,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+              if (widget.sala.disponibilidadeSala.isNotEmpty)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: widget.sala.disponibilidadeSala.toUpperCase() ==
+                              "DISPONIVEL"
+                          ? const Color.fromARGB(255, 47, 47, 47)
+                              .withOpacity(0.85)
+                          : (widget.sala.disponibilidadeSala.toUpperCase() ==
+                                  "INDISPONIVEL"
+                              ? Colors.red.withOpacity(0.85)
+                              : Colors.orange.withOpacity(0.85)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      widget.sala.disponibilidadeSala,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
           Padding(
@@ -143,7 +197,7 @@ class _SalaCardState extends State<SalaCard> {
                 Text(
                   widget.sala.nomeSala,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 17,
                     fontWeight: FontWeight.bold,
                   ),
                   maxLines: 1,
@@ -154,7 +208,7 @@ class _SalaCardState extends State<SalaCard> {
                   widget.sala.descricao,
                   style: TextStyle(
                     color: Colors.grey[700],
-                    fontSize: 14,
+                    fontSize: 13,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -162,55 +216,68 @@ class _SalaCardState extends State<SalaCard> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.aspect_ratio, size: 16, color: Colors.grey[600]),
+                    Icon(Icons.square_foot_outlined,
+                        size: 15, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
                       'Tamanho: ${widget.sala.tamanho}',
-                      style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                      style: TextStyle(color: Colors.grey[700], fontSize: 13),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.calendar_today,
-                        size: 16, color: Colors.grey[600]),
+                    Icon(Icons.calendar_month_outlined,
+                        size: 15, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         '${widget.sala.disponibilidadeDiaSemana} (${widget.sala.disponibilidadeInicio} - ${widget.sala.disponibilidadeFim})',
-                        style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                        style: TextStyle(color: Colors.grey[700], fontSize: 13),
                         overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       'R\$ ${widget.sala.precoHora.toStringAsFixed(2)}/hora',
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
                         color: Colors.blueAccent,
                       ),
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/alugar',
-                            arguments: widget.sala);
+                        if (widget.sala.id != null &&
+                            widget.sala.id!.isNotEmpty) {
+                          Navigator.pushNamed(context, '/alugar',
+                              arguments: widget.sala.id);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                              content: Text(
+                                  'ID da sala indisponível para ver detalhes.')));
+                          print(
+                              '[SalaCard] Botão "Ver Detalhes": ID da sala é nulo ou vazio.');
+                        }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
+                          backgroundColor: Colors.blueAccent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          textStyle: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600)),
                       child: const Text('Ver Detalhes'),
                     ),
                   ],

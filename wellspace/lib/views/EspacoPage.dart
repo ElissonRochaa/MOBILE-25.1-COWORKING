@@ -2,7 +2,7 @@ import 'package:Wellspace/views/widgets/SalaCard.dart';
 import 'package:Wellspace/views/widgets/sideMenu.dart';
 import 'package:flutter/material.dart';
 import '../models/Sala.dart';
-import '../viewmodels/SalaListViewModel.dart'; // importe seu viewmodel
+import '../viewmodels/SalaListViewModel.dart';
 
 class EspacosPage extends StatefulWidget {
   const EspacosPage({super.key});
