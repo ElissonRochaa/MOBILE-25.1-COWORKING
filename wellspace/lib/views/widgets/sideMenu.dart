@@ -176,8 +176,7 @@ class _SideMenuState extends State<SideMenu> {
             leading: const Icon(Icons.help),
             title: const Text('Suporte'),
             onTap: () {
-              Navigator.pop(context);
-              // Navigator.pushReplacementNamed(context, '/suporte');
+              Navigator.pushNamed(context, '/suporte');
             },
           ),
           const Divider(),
