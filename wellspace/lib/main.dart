@@ -11,6 +11,8 @@ import 'package:Wellspace/views/LoginPage.dart';
 import 'package:Wellspace/views/ProfilePage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:Wellspace/views/EditProfilePage.dart';
+import 'package:Wellspace/views/SuportePage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,7 +40,9 @@ class MyApp extends StatelessWidget {
           '/home': (context) => HomePage(),
           '/cadastroSala': (context) => CadastroSalaPage(),
           '/Perfil': (context) => ProfilePage(),
+          '/editar-perfil': (context) => EdiProfilePage(),
           '/espacos': (context) => EspacosPage(),
+          '/suporte': (context) => SuportePage(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/alugar') {
