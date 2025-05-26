@@ -92,6 +92,7 @@ class ProfileCard extends StatelessWidget {
                 if (usuario.dataNascimento != null) const SizedBox(height: 28),
                 ElevatedButton.icon(
                   onPressed: () {
+                    Navigator.pushNamed(context, '/editar-perfil');
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text(
