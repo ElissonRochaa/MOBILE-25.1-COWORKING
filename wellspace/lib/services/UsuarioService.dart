@@ -126,4 +126,42 @@ class UsuarioService {
       throw Exception('Erro ao buscar usuário: ${response.body}');
     }
   }
+/*
+  static Future<bool> atualizarUsuarioComFoto({
+    required String nome,
+    required String email,
+    required DateTime dataNascimento,
+    XFile? novaFotoPerfil,
+  }) async {
+    final token = await obterToken();
+    if (token == null) throw Exception('Token não encontrado');
+
+    var uri = Uri.parse('$baseUrl/usuario/atualizar');
+    var request = http.MultipartRequest('PUT', uri);
+    request.headers['Authorization'] = 'Bearer $token';
+
+    request.fields['usuarioUpdateRequest.nome'] = nome;
+    request.fields['usuarioUpdateRequest.email'] = email;
+    String dataFormatada =
+        '${dataNascimento.year}-${dataNascimento.month.toString().padLeft(2, '0')}-${dataNascimento.day.toString().padLeft(2, '0')}';
+    request.fields['usuarioUpdateRequest.dataNascimento'] = dataFormatada;
+
+    if (novaFotoPerfil != null) {
+      var fotoBytes = await novaFotoPerfil.readAsBytes();
+      request.files.add(http.MultipartFile.fromBytes(
+        'fotoPerfil',
+        fotoBytes,
+        filename: novaFotoPerfil.name,
+      ));
+    }
+
+    var response = await request.send();
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      var erro = await response.stream.bytesToString();
+      print('Erro ao atualizar usuário: $erro');
+      return false;
+    }
+  }*/
 }
