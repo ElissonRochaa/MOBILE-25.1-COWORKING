@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../services/UsuarioService.dart';
 import '../config/JwtDecoder.dart';
 
@@ -22,12 +23,9 @@ class _LoginPageState extends State<LoginPage> {
       _formKey.currentState!.save();
       try {
         print('Iniciando requisição de login...');
-
-    
         await UsuarioService.loginSalvarCredenciais(_email, _senha);
-
-     
         final token = await UsuarioService.obterToken();
+
         if (token != null) {
           Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
           print('Decoded Token: $decodedToken');
@@ -35,8 +33,9 @@ class _LoginPageState extends State<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Login bem-sucedido!')),
           );
-
-          Navigator.pushReplacementNamed(context, '/home');
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/home');
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Erro no login: Token não encontrado')),
@@ -45,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
       } catch (e) {
         print('Erro durante o login: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro no login')),
+          SnackBar(content: Text('Erro no login: ${e.toString()}')),
         );
       }
     } else {
@@ -56,101 +55,186 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void _navigateToCadastroPage() {
+    Navigator.pushNamed(context, '/cadastro');
+  }
+
+  void _navigateToForgotPasswordPage() {
+    print('Navigate to Forgot Password Page');
+     ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Navegar para a página de esqueci minha senha (não implementado)')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Entrar')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
-              const Text(
-                'Entre com sua conta para acessar os detalhes dos espaços de coworking',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 32),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira seu e-mail';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _email = value!;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Senha',
-                  prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureText ? Icons.visibility_off : Icons.visibility,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Text(
+                      'Login',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureText = !_obscureText;
-                      });
-                    },
-                  ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Entre com sua conta para acessar os detalhes dos espaços de coworking',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.email),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira seu e-mail';
+                        }
+                        if (!value.contains('@')) {
+                           return 'Por favor, insira um e-mail válido';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _email = value!;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      decoration: InputDecoration(
+                        labelText: 'Senha',
+                        prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureText ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscureText = !_obscureText;
+                            });
+                          },
+                        ),
+                      ),
+                      obscureText: _obscureText,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira sua senha';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _senha = value!;
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Checkbox(
+                              value: _lembrarDeMim,
+                              onChanged: (value) {
+                                setState(() {
+                                  _lembrarDeMim = value!;
+                                });
+                              },
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            const Text('Lembrar de mim', style: TextStyle(fontSize: 13)),
+                          ],
+                        ),
+                        TextButton(
+                          onPressed: _navigateToForgotPasswordPage,
+                          child: const Text(
+                            'Esqueceu a senha?',
+                            style: TextStyle(color: Colors.blue, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        child: const Text('Entrar'),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text("OU CONTINUE COM"),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        OutlinedButton.icon(
+                          icon: const FaIcon(FontAwesomeIcons.google, size: 18, color: Colors.red),
+                          label: const Text("Google"),
+                          onPressed: () {
+                            print('Google Sign-In Tapped');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Login com Google (não implementado)')),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            textStyle: const TextStyle(fontSize: 14),
+                          ),
+                        ),
+                        OutlinedButton.icon(
+                          icon: const FaIcon(FontAwesomeIcons.facebook, size: 18, color: Colors.blueAccent),
+                          label: const Text("Facebook"),
+                          onPressed: () {
+                            print('Facebook Sign-In Tapped');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Login com Facebook (não implementado)')),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                             textStyle: const TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    GestureDetector(
+                      onTap: _navigateToCadastroPage,
+                      child: const Text(
+                        'Não tem uma conta? Cadastre-se',
+                        style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
                 ),
-                obscureText: _obscureText,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira sua senha';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _senha = value!;
-                },
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _lembrarDeMim,
-                    onChanged: (value) {
-                      setState(() {
-                        _lembrarDeMim = value!;
-                      });
-                    },
-                  ),
-                  const Text('Lembrar de mim'),
-                ],
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _login,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                  ),
-                  child: const Text('Entrar'),
-                ),
-              ),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(context, '/cadastro');
-                },
-                child: const Text(
-                  'Não tem uma conta? Cadastre-se',
-                  style: TextStyle(color: Colors.blue),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
