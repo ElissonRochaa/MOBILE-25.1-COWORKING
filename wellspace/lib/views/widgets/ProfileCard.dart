@@ -9,15 +9,43 @@ class ProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<UsuarioDetailViewModel>();
+    final ThemeData theme = Theme.of(context);
+    final bool isDarkMode = theme.brightness == Brightness.dark;
 
+    if (viewModel.usuario == null) {
+      return const Center(child: Text("Carregando perfil..."));
+    }
     Usuario usuario = viewModel.usuario!;
+
+    Color integridadeBackgroundColor;
+    Color integridadeBorderColor;
+    Color integridadeTextColor;
+
+    if (usuario.integridade) {
+      integridadeBackgroundColor = isDarkMode
+          ? Colors.green.shade700.withOpacity(0.25)
+          : Colors.green.shade50;
+      integridadeBorderColor =
+          isDarkMode ? Colors.green.shade500 : Colors.green.shade200;
+      integridadeTextColor =
+          isDarkMode ? Colors.green.shade200 : Colors.green.shade900;
+    } else {
+      integridadeBackgroundColor = isDarkMode
+          ? Colors.red.shade700.withOpacity(0.25)
+          : Colors.red.shade50;
+      integridadeBorderColor =
+          isDarkMode ? Colors.red.shade500 : Colors.red.shade200;
+      integridadeTextColor =
+          isDarkMode ? Colors.red.shade200 : Colors.red.shade900;
+    }
+
     return Center(
       child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.75,
+        width: MediaQuery.of(context).size.width * 0.85,
         child: Card(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          color: const Color(0xFFF9F4FC),
+          color: theme.cardColor,
           elevation: 4,
           margin: const EdgeInsets.symmetric(vertical: 16.0),
           child: Padding(
@@ -27,50 +55,46 @@ class ProfileCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 CircleAvatar(
-                  radius: 45,
-                  backgroundColor: Colors.grey[300],
+                  radius: 50,
+                  backgroundColor: theme.colorScheme.surfaceVariant,
                   backgroundImage: usuario.fotoPerfil.isNotEmpty
                       ? NetworkImage(usuario.fotoPerfil)
                       : null,
                   child: usuario.fotoPerfil.isEmpty
-                      ? const Icon(Icons.person, size: 45, color: Colors.white)
+                      ? Icon(Icons.person_outline,
+                          size: 50, color: theme.colorScheme.onSurfaceVariant)
                       : null,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 Text(
                   usuario.nome,
-                  style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold),
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   usuario.email,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.7)),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                      color: usuario.integridade
-                          ? Colors.green[50]
-                          : Colors.red[50],
+                      color: integridadeBackgroundColor,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: usuario.integridade
-                              ? Colors.green.shade200
-                              : Colors.red.shade200,
-                          width: 1)),
+                      border:
+                          Border.all(color: integridadeBorderColor, width: 1)),
                   child: Text(
                     usuario.integridade
                         ? "Identidade verificada"
                         : "Não verificado",
                     style: TextStyle(
-                        color: usuario.integridade
-                            ? Colors.green[800]
-                            : Colors.red[800],
+                        color: integridadeTextColor,
                         fontWeight: FontWeight.w500,
                         fontSize: 13),
                   ),
@@ -83,7 +107,7 @@ class ProfileCard extends StatelessWidget {
                     runSpacing: 12,
                     children: [
                       _InfoItem(
-                        icon: Icons.calendar_today,
+                        icon: Icons.calendar_today_outlined,
                         text:
                             "Nasc: ${usuario.dataNascimento!.day.toString().padLeft(2, '0')}/${usuario.dataNascimento!.month.toString().padLeft(2, '0')}/${usuario.dataNascimento!.year}",
                       ),
@@ -93,23 +117,18 @@ class ProfileCard extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pushNamed(context, '/editar-perfil');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text(
-                              'Funcionalidade de editar perfil ainda não implementada.')),
-                    );
                   },
-                  icon: const Icon(Icons.edit, size: 20),
+                  icon: const Icon(Icons.edit_outlined, size: 20),
                   label: const Text("Editar perfil",
                       style: TextStyle(fontSize: 15)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Theme.of(context).primaryColor,
-                    elevation: 2,
+                    backgroundColor: theme.colorScheme.surfaceVariant,
+                    foregroundColor: theme.colorScheme.primary,
+                    elevation: 1,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 12),
                     side: BorderSide(
-                        color: Theme.of(context).primaryColor.withOpacity(0.5)),
+                        color: theme.colorScheme.primary.withOpacity(0.5)),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24)),
                   ),
@@ -131,15 +150,21 @@ class _InfoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: Colors.black54),
+        Icon(icon,
+            size: 18,
+            color: theme.iconTheme.color?.withOpacity(0.7) ??
+                theme.colorScheme.onSurface.withOpacity(0.7)),
         const SizedBox(width: 8),
         Flexible(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 14.5),
+            style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.85)),
             overflow: TextOverflow.ellipsis,
           ),
         ),
