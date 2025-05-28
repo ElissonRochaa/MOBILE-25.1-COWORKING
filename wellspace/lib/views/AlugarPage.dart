@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Wellspace/models/Sala.dart';
 
-// Classe Alugapage agora aceita salaId e o passa para CoworkingPage
 class Alugapage extends StatelessWidget {
   final String salaId;
   const Alugapage({super.key, required this.salaId});
@@ -25,7 +24,7 @@ class CoworkingPage extends StatefulWidget {
 }
 
 class _CoworkingPageState extends State<CoworkingPage> {
-  int _selectedTab = 0; // 0: Por Hora
+  int _selectedTab = 0;
   DateTime? _selectedDate;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
@@ -47,7 +46,7 @@ class _CoworkingPageState extends State<CoworkingPage> {
   Future<void> _fetchSalaData() async {
     _salaDetailViewModel.limparDetalhesSala();
     await _salaDetailViewModel.carregarSalaPorId(widget.salaId);
-    if (_salaDetailViewModel.sala != null) {
+    if (_salaDetailViewModel.sala != null && mounted) {
       await _salaImagemViewModel.listarImagensPorSala(widget.salaId);
     }
   }
@@ -58,8 +57,9 @@ class _CoworkingPageState extends State<CoworkingPage> {
   }
 
   double get totalPrice {
-    if (_startTime == null || _endTime == null || currentPricePerHour == 0.0)
+    if (_startTime == null || _endTime == null || currentPricePerHour == 0.0) {
       return 0;
+    }
     final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
     final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
     if (endMinutes <= startMinutes) return 0;
@@ -68,16 +68,35 @@ class _CoworkingPageState extends State<CoworkingPage> {
   }
 
   Future<void> _pickDate() async {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
     final date = await showDatePicker(
       context: context,
       initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: theme.copyWith(
+            colorScheme: colorScheme.copyWith(
+              primary: colorScheme.primary,
+              onPrimary: colorScheme.onPrimary,
+              surface: colorScheme.surface,
+              onSurface: colorScheme.onSurface,
+            ),
+            dialogBackgroundColor: theme.dialogBackgroundColor,
+          ),
+          child: child!,
+        );
+      },
     );
     if (date != null) setState(() => _selectedDate = date);
   }
 
   Future<void> _pickTime(bool isStart) async {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
     final sala = _salaDetailViewModel.sala;
     TimeOfDay initialTime = const TimeOfDay(hour: 9, minute: 0);
 
@@ -100,9 +119,24 @@ class _CoworkingPageState extends State<CoworkingPage> {
             TimeOfDay(hour: initialTime.hour + 1, minute: initialTime.minute));
 
     final time = await showTimePicker(
-      context: context,
-      initialTime: initialTime,
-    );
+        context: context,
+        initialTime: initialTime,
+        builder: (context, child) {
+          return Theme(
+            data: theme.copyWith(
+              colorScheme: colorScheme.copyWith(
+                primary: colorScheme.primary,
+                onPrimary: colorScheme.onPrimary,
+                surface: colorScheme.surface,
+                onSurface: colorScheme.onSurface,
+              ),
+              timePickerTheme: theme.timePickerTheme.copyWith(
+                backgroundColor: theme.dialogBackgroundColor,
+              ),
+            ),
+            child: child!,
+          );
+        });
 
     if (time != null) {
       setState(() {
@@ -136,6 +170,9 @@ class _CoworkingPageState extends State<CoworkingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final bool isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: Consumer<SalaDetailViewModel>(
@@ -143,10 +180,9 @@ class _CoworkingPageState extends State<CoworkingPage> {
             return Text(viewModel.sala?.nomeSala ?? 'WellSpace');
           },
         ),
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
       drawer: SideMenu(),
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: theme.colorScheme.background,
       body: Consumer2<SalaDetailViewModel, SalaImagemViewModel>(
         builder: (context, salaDetailVM, salaImagemVM, child) {
           if (salaDetailVM.isLoading) {
@@ -159,7 +195,8 @@ class _CoworkingPageState extends State<CoworkingPage> {
                 child: Text(
                   'Erro ao carregar dados da sala: ${salaDetailVM.errorMessage}\nPor favor, tente novamente.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.red.shade700, fontSize: 16),
+                  style:
+                      TextStyle(color: theme.colorScheme.error, fontSize: 16),
                 ),
               ),
             );
@@ -171,19 +208,22 @@ class _CoworkingPageState extends State<CoworkingPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.search_off,
-                        color: Colors.orange, size: 48),
+                    Icon(Icons.search_off,
+                        color: theme.colorScheme.secondary, size: 48),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Detalhes da sala não encontrados.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(
+                          fontSize: 18, color: theme.colorScheme.onBackground),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'ID da Sala: ${widget.salaId}',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6)),
                     ),
                   ],
                 ),
@@ -200,168 +240,221 @@ class _CoworkingPageState extends State<CoworkingPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Início > Coworking > ${sala.nomeSala}',
-                      style: const TextStyle(color: Colors.grey)),
+                      style: TextStyle(
+                          color: theme.textTheme.bodySmall?.color ??
+                              theme.colorScheme.onSurface.withOpacity(0.6))),
                   const SizedBox(height: 8),
                   Stack(
                     children: [
                       Container(
                         height: 200,
                         width: double.infinity,
-                        color: Colors.grey[300],
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceVariant,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: salaImagemVM.imagensCadastradas.isNotEmpty
-                            ? PageView.builder(
-                                itemCount:
-                                    salaImagemVM.imagensCadastradas.length,
-                                itemBuilder: (context, index) {
-                                  return Image.network(
-                                    salaImagemVM.imagensCadastradas[index],
-                                    fit: BoxFit.cover,
-                                    loadingBuilder: (BuildContext context,
-                                        Widget child,
-                                        ImageChunkEvent? loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Center(
-                                        child: CircularProgressIndicator(
-                                          value: loadingProgress
-                                                      .expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                              : null,
-                                        ),
-                                      );
-                                    },
-                                    errorBuilder: (BuildContext context,
-                                        Object exception,
-                                        StackTrace? stackTrace) {
-                                      return const Center(
-                                          child: Icon(
-                                              Icons.broken_image_outlined,
-                                              color: Colors.grey,
-                                              size: 50));
-                                    },
-                                  );
-                                },
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: PageView.builder(
+                                  itemCount:
+                                      salaImagemVM.imagensCadastradas.length,
+                                  itemBuilder: (context, index) {
+                                    return Image.network(
+                                      salaImagemVM.imagensCadastradas[index],
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (BuildContext context,
+                                          Widget child,
+                                          ImageChunkEvent? loadingProgress) {
+                                        if (loadingProgress == null)
+                                          return child;
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            value: loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                                : null,
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder: (BuildContext context,
+                                          Object exception,
+                                          StackTrace? stackTrace) {
+                                        return Center(
+                                            child: Icon(
+                                                Icons.broken_image_outlined,
+                                                color: theme.colorScheme
+                                                    .onSurfaceVariant,
+                                                size: 50));
+                                      },
+                                    );
+                                  },
+                                ),
                               )
-                            : const Center(
+                            : Center(
                                 child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
                                     Icons.image_not_supported_outlined,
                                     size: 50,
-                                    color: Colors.grey,
+                                    color: theme.colorScheme.onSurfaceVariant,
                                   ),
-                                  SizedBox(height: 8),
-                                  Text('Nenhuma imagem disponível'),
+                                  const SizedBox(height: 8),
+                                  Text('Nenhuma imagem disponível',
+                                      style: TextStyle(
+                                          color: theme
+                                              .colorScheme.onSurfaceVariant)),
                                 ],
                               )),
                       ),
                       Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.favorite_border,
-                                  color: Colors.white),
-                              onPressed: () {/* Lógica de favoritar */},
-                            ),
-                            IconButton(
-                              icon:
-                                  const Icon(Icons.share, color: Colors.white),
-                              onPressed: () {/* Lógica de compartilhar */},
-                            ),
-                          ],
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.favorite_border,
+                                    color: Colors.white),
+                                onPressed: () {},
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.share,
+                                    color: Colors.white),
+                                onPressed: () {},
+                                visualDensity: VisualDensity.compact,
+                                padding: EdgeInsets.zero,
+                              ),
+                            ],
+                          ),
                         ),
                       )
                     ],
                   ),
                   const SizedBox(height: 16),
                   Text(sala.nomeSala,
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold)),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onBackground)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.square_foot_outlined,
-                          size: 16, color: Colors.grey),
+                      Icon(Icons.square_foot_outlined,
+                          size: 16,
+                          color: theme.colorScheme.onSurface.withOpacity(0.7)),
                       const SizedBox(width: 4),
                       Text('Tamanho: ${sala.tamanho}',
-                          style: const TextStyle(color: Colors.grey)),
+                          style: TextStyle(
+                              color: theme.colorScheme.onSurface
+                                  .withOpacity(0.7))),
                     ],
                   ),
-                  const SizedBox(height: 8),
                   const SizedBox(height: 16),
-                  const Text('Sobre este espaço',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text(sala.descricao.isNotEmpty
-                      ? sala.descricao
-                      : 'Nenhuma descrição disponível.'),
+                  Text('Sobre este espaço',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onBackground)),
+                  const SizedBox(height: 4),
+                  Text(
+                      sala.descricao.isNotEmpty
+                          ? sala.descricao
+                          : 'Nenhuma descrição disponível.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onBackground
+                              .withOpacity(0.85))),
                   const SizedBox(height: 16),
-                  _buildScheduleCard(sala),
+                  _buildScheduleCard(context, theme, sala),
                   const SizedBox(height: 16),
-                  const Text('Localização no Mapa',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('Localização no Mapa',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onBackground)),
                   Container(
                       height: 150,
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: theme.colorScheme.surfaceVariant,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade400)),
+                          border: Border.all(
+                              color:
+                                  theme.colorScheme.outline.withOpacity(0.5))),
                       alignment: Alignment.center,
-                      child: const Column(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             Icons.map_outlined,
                             size: 40,
-                            color: Colors.grey,
+                            color: theme.colorScheme.onSurfaceVariant,
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Text('Integração com mapa pendente',
-                              style: TextStyle(color: Colors.grey)),
+                              style: TextStyle(
+                                  color: theme.colorScheme.onSurfaceVariant)),
                         ],
                       )),
                   const SizedBox(height: 16),
-                  const Text('Preços',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('Preços',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onBackground)),
                   const SizedBox(height: 8),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: const [
-                        BoxShadow(color: Colors.black12, blurRadius: 6)
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.shadowColor
+                              .withOpacity(isDarkMode ? 0.3 : 0.1),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        )
                       ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Por hora',
-                            style: TextStyle(color: Colors.grey)),
+                        Text('Por hora',
+                            style: TextStyle(
+                                color: theme.colorScheme.onSurface
+                                    .withOpacity(0.7))),
                         const SizedBox(height: 4),
                         Text('R\$ ${sala.precoHora.toStringAsFixed(2)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF004AAD))),
+                                color: theme.colorScheme.primary)),
                         const SizedBox(height: 4),
                         Text('Status: ${sala.disponibilidadeSala}',
                             style: TextStyle(
                                 fontSize: 12,
                                 color: sala.disponibilidadeSala.toUpperCase() ==
                                         "DISPONIVEL"
-                                    ? Colors.green.shade700
-                                    : Colors.red.shade700,
+                                    ? (isDarkMode
+                                        ? Colors.greenAccent.shade400
+                                        : Colors.green.shade700)
+                                    : (isDarkMode
+                                        ? Colors.redAccent.shade200
+                                        : Colors.red.shade700),
                                 fontWeight: FontWeight.bold)),
                         const SizedBox(height: 16),
-                        _buildReservationForm(sala),
+                        _buildReservationForm(context, theme, sala),
                       ],
                     ),
                   ),
@@ -375,7 +468,7 @@ class _CoworkingPageState extends State<CoworkingPage> {
     );
   }
 
-  Widget _buildScheduleCard(Sala sala) {
+  Widget _buildScheduleCard(BuildContext context, ThemeData theme, Sala sala) {
     final diasDaSemanaOrdem = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
     final diasDaSemanaNomes = {
       'Seg': 'Segunda',
@@ -398,16 +491,25 @@ class _CoworkingPageState extends State<CoworkingPage> {
         ? '${sala.disponibilidadeInicio} - ${sala.disponibilidadeFim}'
         : 'Não especificado';
 
+    final bool isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+        boxShadow: [
+          BoxShadow(
+              color: theme.shadowColor.withOpacity(isDarkMode ? 0.25 : 0.08),
+              blurRadius: 4,
+              offset: const Offset(0, 1))
+        ],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text("Horários de Funcionamento",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        Text("Horários de Funcionamento",
+            style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface)),
         const SizedBox(height: 8),
         ...diasDaSemanaOrdem.map((diaAbrev) {
           final nomeCompleto = diasDaSemanaNomes[diaAbrev] ?? diaAbrev;
@@ -415,25 +517,25 @@ class _CoworkingPageState extends State<CoworkingPage> {
           final horarioExibicao =
               disponivelNesteDia ? horarioFuncionamento : 'Fechado';
 
+          Color statusColor = disponivelNesteDia
+              ? theme.colorScheme.onSurface
+              : theme.colorScheme.error;
+          Color iconColor = disponivelNesteDia
+              ? theme.colorScheme.onSurfaceVariant
+              : theme.colorScheme.error.withOpacity(0.7);
+
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(nomeCompleto),
+                Text(nomeCompleto,
+                    style: TextStyle(color: theme.colorScheme.onSurface)),
                 Row(
                   children: [
-                    Icon(Icons.access_time,
-                        size: 16,
-                        color: disponivelNesteDia
-                            ? Colors.black54
-                            : Colors.red.shade300),
+                    Icon(Icons.access_time, size: 16, color: iconColor),
                     const SizedBox(width: 4),
-                    Text(horarioExibicao,
-                        style: TextStyle(
-                            color: disponivelNesteDia
-                                ? Colors.black
-                                : Colors.red)),
+                    Text(horarioExibicao, style: TextStyle(color: statusColor)),
                   ],
                 )
               ],
@@ -444,13 +546,46 @@ class _CoworkingPageState extends State<CoworkingPage> {
     );
   }
 
-  Widget _buildReservationForm(Sala sala) {
+  Widget _buildReservationForm(
+      BuildContext context, ThemeData theme, Sala sala) {
     bool podeReservar =
         sala.disponibilidadeSala.toUpperCase() == "DISPONIVEL" &&
             _selectedDate != null &&
             _startTime != null &&
             _endTime != null &&
             totalPrice > 0;
+
+    InputDecorationTheme inputDecorationTheme = theme.inputDecorationTheme;
+    InputDecoration formFieldDecoration(String label, String hint,
+        {Widget? suffixIcon}) {
+      return InputDecoration(
+        labelText: label,
+        hintText: hint,
+        border: inputDecorationTheme.border ??
+            OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        enabledBorder: inputDecorationTheme.enabledBorder ??
+            OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide:
+                  BorderSide(color: theme.colorScheme.outline.withOpacity(0.7)),
+            ),
+        focusedBorder: inputDecorationTheme.focusedBorder ??
+            OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide:
+                  BorderSide(color: theme.colorScheme.primary, width: 1.5),
+            ),
+        labelStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+        hintStyle: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7)),
+        suffixIcon: suffixIcon != null
+            ? IconTheme(
+                data: IconThemeData(color: theme.colorScheme.onSurfaceVariant),
+                child: suffixIcon)
+            : null,
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -458,24 +593,19 @@ class _CoworkingPageState extends State<CoworkingPage> {
           onTap: _pickDate,
           child: AbsorbPointer(
             child: TextFormField(
-              key: ValueKey(
-                  'date-${_selectedDate?.toIso8601String()}'), // Para forçar rebuild
+              key: ValueKey('date-${_selectedDate?.toIso8601String()}'),
               initialValue: _selectedDate == null
                   ? null
                   : '${_selectedDate!.day.toString().padLeft(2, '0')}/'
                       '${_selectedDate!.month.toString().padLeft(2, '0')}/'
                       '${_selectedDate!.year}',
-              decoration: InputDecoration(
-                hintText: 'Data',
-                labelText: 'Data',
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                suffixIcon: const Icon(Icons.calendar_today),
-              ),
+              style: TextStyle(color: theme.colorScheme.onSurface),
+              decoration: formFieldDecoration('Data', 'Selecione a data',
+                  suffixIcon: const Icon(Icons.calendar_today)),
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Row(
           children: [
             Expanded(
@@ -485,17 +615,13 @@ class _CoworkingPageState extends State<CoworkingPage> {
                   child: TextFormField(
                     key: ValueKey('start-${_startTime?.format(context)}'),
                     initialValue: _startTime?.format(context),
-                    decoration: InputDecoration(
-                      hintText: 'Início',
-                      labelText: 'Início',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                    decoration: formFieldDecoration('Início', 'HH:MM'),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             Expanded(
               child: GestureDetector(
                 onTap: () => _pickTime(false),
@@ -503,32 +629,29 @@ class _CoworkingPageState extends State<CoworkingPage> {
                   child: TextFormField(
                     key: ValueKey('end-${_endTime?.format(context)}'),
                     initialValue: _endTime?.format(context),
-                    decoration: InputDecoration(
-                      hintText: 'Término',
-                      labelText: 'Término',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                    decoration: formFieldDecoration('Término', 'HH:MM'),
                   ),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         TextFormField(
           initialValue: _people.toString(),
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            labelText: 'Número de Pessoas',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
+          style: TextStyle(color: theme.colorScheme.onSurface),
+          decoration:
+              formFieldDecoration('Número de Pessoas', 'Quantas pessoas?'),
           onChanged: (val) => setState(() => _people = int.tryParse(val) ?? 1),
         ),
         const SizedBox(height: 16),
         Text('Total: R\$ ${totalPrice.toStringAsFixed(2)}',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
+            style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onBackground)),
+        const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
           height: 56,
@@ -543,21 +666,19 @@ class _CoworkingPageState extends State<CoworkingPage> {
                   }
                 : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF004AAD),
-              disabledBackgroundColor: Colors.grey.shade400,
+              backgroundColor: theme.colorScheme.primary,
+              disabledBackgroundColor:
+                  theme.colorScheme.onSurface.withOpacity(0.12),
+              foregroundColor: theme.colorScheme.onPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
               elevation: 2,
             ),
-            child: const Text(
-              'Reservar Agora',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
+            child: Text('Reservar Agora',
+                style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onPrimary)),
           ),
         )
       ],
