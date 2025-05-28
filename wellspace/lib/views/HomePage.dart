@@ -1,16 +1,21 @@
-import 'dart:convert';
 import 'package:Wellspace/models/Sala.dart';
 import 'package:Wellspace/viewmodels/SalaListViewModel.dart';
+import 'package:Wellspace/views/widgets/ThemeNotifer.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import '../views/widgets/sideMenu.dart';
 import 'package:Wellspace/services/SalaImagesService.dart';
+
+final themeNotifier = ThemeNotifier();
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    print(
+        "HomePage: Reconstruindo. Brilho atual do tema via Theme.of(context): ${Theme.of(context).brightness}");
+
     return Scaffold(
       drawer: SideMenu(),
       appBar: AppBar(
@@ -21,6 +26,23 @@ class HomePage extends StatelessWidget {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+            ),
+            tooltip: Theme.of(context).brightness == Brightness.dark
+                ? 'Mudar para tema claro'
+                : 'Mudar para tema escuro',
+            onPressed: () {
+              print(
+                  "HomePage: Botão de tema pressionado. Chamando toggleTheme().");
+              Provider.of<ThemeNotifier>(context, listen: false).toggleTheme();
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -46,10 +68,14 @@ class HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF0066CC), Color(0xFF3399FF)],
+          colors: isDarkMode
+              ? [Colors.blueGrey[700]!, Colors.blueGrey[900]!]
+              : [const Color(0xFF0066CC), const Color(0xFF3399FF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -58,18 +84,20 @@ class HeroSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Encontre o espaço de trabalho perfeito para você',
             style: TextStyle(
-              color: Colors.white,
+              color: isDarkMode ? Colors.white : Colors.white,
               fontSize: 28,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Milhares de espaços de coworking disponíveis para reserva imediata',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
+            style: TextStyle(
+                color: isDarkMode ? Colors.white70 : Colors.white70,
+                fontSize: 16),
           ),
           const SizedBox(height: 24),
           Center(
@@ -90,8 +118,6 @@ class HeroSection extends StatelessWidget {
                               prefixIcon: const Icon(Icons.search),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide:
-                                    BorderSide(color: Colors.grey.shade300),
                               ),
                               contentPadding:
                                   const EdgeInsets.symmetric(vertical: 16),
@@ -161,9 +187,12 @@ class _FeaturedSpacesSectionState extends State<FeaturedSpacesSection> {
         children: [
           Row(
             children: [
-              const Text(
+              Text(
                 'Espaços em Destaque',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const Spacer(),
               TextButton(
@@ -268,12 +297,19 @@ class _StepItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
         CircleAvatar(
           radius: 30,
-          backgroundColor: Colors.blue.shade50,
-          child: Icon(icon, size: 30, color: Colors.blue),
+          backgroundColor: isDark
+              ? Theme.of(context).colorScheme.secondaryContainer
+              : Colors.blue.shade50,
+          child: Icon(icon,
+              size: 30,
+              color: isDark
+                  ? Theme.of(context).colorScheme.onSecondaryContainer
+                  : Colors.blue),
         ),
         const SizedBox(height: 8),
         Text(
@@ -284,7 +320,9 @@ class _StepItem extends StatelessWidget {
         const SizedBox(height: 4),
         Text(description,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, color: Colors.black54)),
+            style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.grey[400] : Colors.black54)),
       ],
     );
   }
@@ -295,25 +333,38 @@ class CTABanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.blue,
+        color: isDark
+            ? Theme.of(context).colorScheme.primaryContainer
+            : Colors.blue,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'Pronto para encontrar seu espaço ideal?',
             style: TextStyle(
-                color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                color: isDark
+                    ? Theme.of(context).colorScheme.onPrimaryContainer
+                    : Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Milhares de profissionais já encontraram o espaço perfeito para trabalhar. Junte-se a eles!',
-            style: TextStyle(color: Colors.white70),
+            style: TextStyle(
+                color: isDark
+                    ? Theme.of(context)
+                        .colorScheme
+                        .onPrimaryContainer
+                        .withOpacity(0.8)
+                    : Colors.white70),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -323,8 +374,11 @@ class CTABanner extends StatelessWidget {
             },
             child: const Text('Explorar Espaços'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.blue,
+              backgroundColor:
+                  isDark ? Theme.of(context).colorScheme.surface : Colors.white,
+              foregroundColor: isDark
+                  ? Theme.of(context).colorScheme.onSurface
+                  : Colors.blue,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
             ),
           ),
@@ -369,12 +423,9 @@ class _SalaCardState extends State<SalaCard> {
     });
     try {
       final String idParaServico = widget.sala.id.toString();
-      print('[SalaCard] Sala ID sendo usada para a requisição: $idParaServico');
 
       final List<String> urlsRecebidas =
           await SalaImagemService.listarImagensPorSala(idParaServico);
-
-      print('[SalaCard] URLs recebidas do serviço: $urlsRecebidas');
 
       if (mounted) {
         setState(() {
@@ -382,16 +433,12 @@ class _SalaCardState extends State<SalaCard> {
             imageUrl = urlsRecebidas.first;
           } else {
             imageUrl = null;
-            print(
-                '[SalaCard] Nenhuma URL de imagem recebida para a sala ID: $idParaServico');
           }
-          print('[SalaCard] URL da imagem definida para o card: $imageUrl');
+
           isLoading = false;
         });
       }
     } catch (e, stackTrace) {
-      print('[SalaCard] Erro ao carregar imagem no SalaCard: $e');
-      print('[SalaCard] Stack Trace: $stackTrace');
       if (mounted) {
         setState(() {
           isLoading = false;
@@ -403,6 +450,8 @@ class _SalaCardState extends State<SalaCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(context, '/alugar', arguments: widget.sala.id);
@@ -421,7 +470,7 @@ class _SalaCardState extends State<SalaCard> {
                 Container(
                   height: 150,
                   width: double.infinity,
-                  color: Colors.grey[200],
+                  color: Theme.of(context).colorScheme.surfaceVariant,
                   child: isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : imageUrl != null && imageUrl!.isNotEmpty
@@ -429,8 +478,6 @@ class _SalaCardState extends State<SalaCard> {
                               imageUrl!,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
-                                print(
-                                    '[SalaCard] Erro ao carregar imagem da rede ($imageUrl): $error');
                                 return Center(
                                   child: Icon(
                                     Icons.broken_image,
@@ -493,9 +540,10 @@ class _SalaCardState extends State<SalaCard> {
                 children: [
                   Text(
                     widget.sala.nomeSala,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
+                      color: Theme.of(context).textTheme.titleMedium?.color,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -504,7 +552,7 @@ class _SalaCardState extends State<SalaCard> {
                   Text(
                     widget.sala.descricao,
                     style: TextStyle(
-                      color: Colors.grey[700],
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                       fontSize: 13,
                     ),
                     maxLines: 2,
@@ -514,42 +562,46 @@ class _SalaCardState extends State<SalaCard> {
                   Row(
                     children: [
                       Icon(Icons.aspect_ratio_outlined,
-                          size: 15, color: Colors.grey[600]),
+                          size: 15,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600]),
                       const SizedBox(width: 4),
                       Text(
                         widget.sala.tamanho,
-                        style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                        style: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.grey[700],
+                            fontSize: 12),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Icon(Icons.calendar_today,
-                          size: 16, color: Colors.grey[600]),
+                          size: 16,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600]),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           '${widget.sala.disponibilidadeDiaSemana} (${widget.sala.disponibilidadeInicio} - ${widget.sala.disponibilidadeFim})',
-                          style:
-                              TextStyle(color: Colors.grey[700], fontSize: 14),
+                          style: TextStyle(
+                              color:
+                                  isDark ? Colors.grey[400] : Colors.grey[700],
+                              fontSize: 14),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'R\$ ${widget.sala.precoHora.toStringAsFixed(2)}/hora',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blueAccent,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     ],
