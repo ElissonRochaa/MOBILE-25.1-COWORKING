@@ -20,64 +20,90 @@ class _EspacosPageState extends State<EspacosPage> {
   void initState() {
     super.initState();
     salaListViewModel.carregarSalas().then((_) {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final bool isDarkMode = theme.brightness == Brightness.dark;
+
     final List<Sala> salasFiltradas = salaListViewModel.salas.where((sala) {
       return sala.nomeSala.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
       drawer: SideMenu(),
-      backgroundColor: Colors.grey[100],
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         centerTitle: true,
         elevation: 1,
-        title: const Text(
+        title: Text(
           'Todos os Espaços',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: Column(
         children: [
-          _buildSearchBar(),
-          _buildActionButtons(),
-          _buildEspacosEncontrados(salasFiltradas.length),
+          _buildSearchBar(context, theme, isDarkMode),
+          _buildActionButtons(context, theme, isDarkMode),
+          _buildEspacosEncontrados(context, theme, salasFiltradas.length),
           Expanded(
             child: exibirMapa
-                ? _buildMapaPlaceholder()
-                : _buildListaEspacos(salasFiltradas),
+                ? _buildMapaPlaceholder(context, theme, isDarkMode)
+                : _buildListaEspacos(context, theme, salasFiltradas),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(
+      BuildContext context, ThemeData theme, bool isDarkMode) {
     return Padding(
       padding: const EdgeInsets.all(12.0),
       child: TextField(
         onChanged: (value) => setState(() => searchQuery = value),
+        style: TextStyle(color: theme.colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: 'Buscar por nome',
-          prefixIcon: const Icon(Icons.search),
+          hintStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+          prefixIcon:
+              Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: isDarkMode
+              ? theme.colorScheme.surfaceVariant.withOpacity(0.5)
+              : Colors.white,
           contentPadding: const EdgeInsets.symmetric(vertical: 0),
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide:
+                BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide:
+                BorderSide(color: theme.colorScheme.primary, width: 1.5),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(
+      BuildContext context, ThemeData theme, bool isDarkMode) {
+    final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
+      backgroundColor: theme.colorScheme.surfaceVariant,
+      foregroundColor: theme.colorScheme.onSurfaceVariant,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
@@ -86,65 +112,68 @@ class _EspacosPageState extends State<EspacosPage> {
             onPressed: () {},
             icon: const Icon(Icons.filter_list, size: 18),
             label: const Text('Filtros'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[200],
-              foregroundColor: Colors.black,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
+            style: buttonStyle,
           ),
           const SizedBox(width: 10),
           ElevatedButton.icon(
             onPressed: () {},
             icon: const Icon(Icons.sort, size: 18),
             label: const Text('Ordenar por'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[200],
-              foregroundColor: Colors.black,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
+            style: buttonStyle,
           ),
           const Spacer(),
           IconButton(
             onPressed: () => setState(() => exibirMapa = false),
             icon: Icon(Icons.view_list,
-                color: !exibirMapa ? Colors.blue : Colors.black),
+                color: !exibirMapa
+                    ? theme.colorScheme.primary
+                    : theme.iconTheme.color),
+            tooltip: 'Visualizar em lista',
           ),
           IconButton(
             onPressed: () => setState(() => exibirMapa = true),
             icon: Icon(Icons.location_on,
-                color: exibirMapa ? Colors.blue : Colors.black),
+                color: exibirMapa
+                    ? theme.colorScheme.primary
+                    : theme.iconTheme.color),
+            tooltip: 'Visualizar no mapa',
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEspacosEncontrados(int count) {
+  Widget _buildEspacosEncontrados(
+      BuildContext context, ThemeData theme, int count) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text('$count espaços encontrados',
-            style: const TextStyle(fontWeight: FontWeight.w500)),
+            style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: theme.colorScheme.onBackground)),
       ),
     );
   }
 
-  Widget _buildListaEspacos(List<Sala> salas) {
+  Widget _buildListaEspacos(
+      BuildContext context, ThemeData theme, List<Sala> salas) {
     if (salaListViewModel.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
     if (salaListViewModel.errorMessage != null) {
-      return Center(child: Text(salaListViewModel.errorMessage!));
+      return Center(
+          child: Text(salaListViewModel.errorMessage!,
+              style: TextStyle(color: theme.colorScheme.error)));
     }
     if (salas.isEmpty) {
-      return const Center(child: Text('Nenhum espaço encontrado'));
+      return Center(
+          child: Text('Nenhum espaço encontrado',
+              style: TextStyle(color: theme.colorScheme.onBackground)));
     }
     return ListView.builder(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
       itemCount: salas.length,
       itemBuilder: (context, index) {
         return _buildSalaCard(salas[index]);
@@ -156,25 +185,30 @@ class _EspacosPageState extends State<EspacosPage> {
     return SalaCard(sala: sala);
   }
 
-  Widget _buildMapaPlaceholder() {
+  Widget _buildMapaPlaceholder(
+      BuildContext context, ThemeData theme, bool isDarkMode) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.grey[300],
+          color: theme.colorScheme.surfaceVariant,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(height: 80),
-            Icon(Icons.map, size: 60, color: Colors.blue),
-            SizedBox(height: 12),
-            Text("Mapa do Google será integrado aqui"),
-            SizedBox(height: 4),
-            Text("Mostrando espaços", style: TextStyle(color: Colors.grey)),
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
+            Icon(Icons.map, size: 60, color: theme.colorScheme.primary),
+            const SizedBox(height: 12),
+            Text("Mapa do Google será integrado aqui",
+                style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
+            const SizedBox(height: 4),
+            Text("Mostrando espaços",
+                style: TextStyle(
+                    color:
+                        theme.colorScheme.onSurfaceVariant.withOpacity(0.7))),
+            const SizedBox(height: 80),
           ],
         ),
       ),
