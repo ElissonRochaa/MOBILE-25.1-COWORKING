@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../services/UsuarioService.dart';
@@ -22,14 +21,12 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       try {
-        print('Iniciando requisição de login...');
         await UsuarioService.loginSalvarCredenciais(_email, _senha);
         final token = await UsuarioService.obterToken();
 
         if (token != null) {
           Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-          print('Decoded Token: $decodedToken');
-
+          
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Login bem-sucedido!')),
           );
@@ -42,13 +39,11 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
       } catch (e) {
-        print('Erro durante o login: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erro no login: ${e.toString()}')),
         );
       }
     } else {
-      print('Erro: Formulário inválido');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, preencha todos os campos')),
       );
@@ -60,10 +55,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _navigateToForgotPasswordPage() {
-    print('Navigate to Forgot Password Page');
-     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navegar para a página de esqueci minha senha (não implementado)')),
-    );
+    Navigator.pushNamed(context, '/forgot-password');
   }
 
   @override
@@ -109,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                           return 'Por favor, insira seu e-mail';
                         }
                         if (!value.contains('@')) {
-                           return 'Por favor, insira um e-mail válido';
+                            return 'Por favor, insira um e-mail válido';
                         }
                         return null;
                       },
@@ -197,7 +189,6 @@ class _LoginPageState extends State<LoginPage> {
                           icon: const FaIcon(FontAwesomeIcons.google, size: 18, color: Colors.red),
                           label: const Text("Google"),
                           onPressed: () {
-                            print('Google Sign-In Tapped');
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Login com Google (não implementado)')),
                             );
@@ -211,14 +202,13 @@ class _LoginPageState extends State<LoginPage> {
                           icon: const FaIcon(FontAwesomeIcons.facebook, size: 18, color: Colors.blueAccent),
                           label: const Text("Facebook"),
                           onPressed: () {
-                            print('Facebook Sign-In Tapped');
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Login com Facebook (não implementado)')),
                             );
                           },
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                             textStyle: const TextStyle(fontSize: 14),
+                              textStyle: const TextStyle(fontSize: 14),
                           ),
                         ),
                       ],
