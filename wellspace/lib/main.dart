@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Wellspace/views/EditProfilePage.dart';
 import 'package:Wellspace/views/SuportePage.dart';
+import 'package:Wellspace/views/SplashPage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -64,9 +65,10 @@ class MyApp extends StatelessWidget {
               ),
             ),
             themeMode: themeNotifier.themeMode,
-            initialRoute: '/login',
+            initialRoute: '/',
             debugShowCheckedModeBanner: false,
             routes: {
+              '/': (context) => const SplashPage(),
               '/login': (context) => LoginPage(),
               '/cadastro': (context) => CadastroPage(),
               '/home': (context) => const HomePage(),
