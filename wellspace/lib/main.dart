@@ -1,22 +1,27 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:Wellspace/viewmodels/SalaDetailViewModel.dart';
 import 'package:Wellspace/viewmodels/SalaImagemViewModel.dart';
 import 'package:Wellspace/viewmodels/SalaListViewModel.dart';
 import 'package:Wellspace/viewmodels/UsuarioDetailViewModel.dart';
-import 'package:Wellspace/views/AlugarPage.dart';
-import 'package:Wellspace/views/CadastroPage.dart';
-import 'package:Wellspace/views/CadastroSalaPage.dart';
-import 'package:Wellspace/views/EspacoPage.dart';
-import 'package:Wellspace/views/HomePage.dart';
-import 'package:Wellspace/views/LoginPage.dart';
-import 'package:Wellspace/views/ProfilePage.dart';
+import 'package:Wellspace/viewmodels/PasswordRecoveryViewModel.dart';
 import 'package:Wellspace/views/widgets/ThemeNotifer.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:Wellspace/views/LoginPage.dart';
+import 'package:Wellspace/views/CadastroPage.dart';
+import 'package:Wellspace/views/HomePage.dart';
+import 'package:Wellspace/views/CadastroSalaPage.dart';
+import 'package:Wellspace/views/ProfilePage.dart';
 import 'package:Wellspace/views/EditProfilePage.dart';
+import 'package:Wellspace/views/EspacoPage.dart';
 import 'package:Wellspace/views/SuportePage.dart';
 import 'package:Wellspace/views/SplashPage.dart';
+import 'package:Wellspace/views/AlugarPage.dart';
+import 'package:Wellspace/views/EsqueciSenhaPage.dart';
+import 'package:Wellspace/views/RecumperacaoSenhaPage.dart';
 
 void main() {
+  usePathUrlStrategy();
   runApp(const MyApp());
 }
 
@@ -32,6 +37,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SalaImagemViewModel()),
         ChangeNotifierProvider(create: (_) => SalaListViewModel()),
         ChangeNotifierProvider(create: (_) => UsuarioDetailViewModel()),
+        ChangeNotifierProvider(create: (_) => PasswordRecoveryViewModel()),
       ],
       child: Consumer<ThemeNotifier>(
         builder: (context, themeNotifier, child) {
@@ -40,6 +46,8 @@ class MyApp extends StatelessWidget {
 
           return MaterialApp(
             title: 'Wellspace',
+            debugShowCheckedModeBanner: false,
+            themeMode: themeNotifier.themeMode,
             theme: ThemeData(
               brightness: Brightness.light,
               primarySwatch: Colors.blue,
@@ -64,19 +72,18 @@ class MyApp extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
             ),
-            themeMode: themeNotifier.themeMode,
             initialRoute: '/',
-            debugShowCheckedModeBanner: false,
             routes: {
               '/': (context) => const SplashPage(),
-              '/login': (context) => LoginPage(),
+              '/login': (context) => const LoginPage(),
               '/cadastro': (context) => CadastroPage(),
               '/home': (context) => const HomePage(),
               '/cadastroSala': (context) => CadastroSalaPage(),
-              '/Perfil': (context) => ProfilePage(),
-              '/editar-perfil': (context) => EdiProfilePage(),
-              '/espacos': (context) => EspacosPage(),
-              '/suporte': (context) => SuportePage(),
+              '/Perfil': (context) => const ProfilePage(),
+              '/editar-perfil': (context) => const EdiProfilePage(),
+              '/espacos': (context) => const EspacosPage(),
+              '/suporte': (context) => const SuportePage(),
+              '/forgot-password': (context) => const ForgotPasswordForm(),
             },
             onGenerateRoute: (settings) {
               if (settings.name == '/alugar') {
@@ -86,16 +93,28 @@ class MyApp extends StatelessWidget {
                     builder: (context) => Alugapage(salaId: salaId),
                   );
                 } else {
-                  print(
-                      'Erro de Rota: ID da sala ausente ou inválido para /alugar');
+                  return _errorRoute(
+                      'Erro ao carregar detalhes da sala: ID não fornecido.');
+                }
+              } else if (settings.name != null &&
+                  settings.name!.startsWith('/reset-password')) {
+                String? token;
+                final Uri uri = Uri.parse(settings.name!);
+
+                if (uri.queryParameters.containsKey('token')) {
+                  token = uri.queryParameters['token'];
+                } else if (settings.arguments is Map<String, dynamic>) {
+                  final arguments = settings.arguments as Map<String, dynamic>?;
+                  token = arguments?['token'] as String?;
+                }
+
+                if (token != null && token.isNotEmpty) {
                   return MaterialPageRoute(
-                    builder: (_) => Scaffold(
-                      appBar: AppBar(title: const Text('Erro de Rota')),
-                      body: const Center(
-                          child: Text(
-                              'Erro ao carregar detalhes da sala: ID não fornecido.')),
-                    ),
+                    builder: (context) => ResetPasswordScreen(token: token!),
                   );
+                } else {
+                  return _errorRoute(
+                      'Token de redefinição ausente ou inválido.');
                 }
               }
               return null;
@@ -103,15 +122,24 @@ class MyApp extends StatelessWidget {
             onUnknownRoute: (settings) {
               return MaterialPageRoute(
                 builder: (_) => Scaffold(
-                  appBar: AppBar(title: const Text('Página não encontrada')),
+                  appBar: AppBar(title: const Text('Página Não Encontrada')),
                   body: const Center(
-                      child:
-                          Text('A página que você tentou acessar não existe.')),
+                    child: Text('A rota solicitada não foi encontrada.'),
+                  ),
                 ),
               );
             },
           );
         },
+      ),
+    );
+  }
+
+  MaterialPageRoute _errorRoute(String message) {
+    return MaterialPageRoute(
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: const Text('Erro de Rota')),
+        body: Center(child: Text(message)),
       ),
     );
   }
