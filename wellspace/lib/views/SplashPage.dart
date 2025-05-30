@@ -20,7 +20,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
   final Duration _initialDelay = const Duration(milliseconds: 450);
   final Duration _textDuration = const Duration(seconds: 2);
-  final Duration _lottieDuration = const Duration(seconds: 3);
+  final Duration _lottieDuration = const Duration(seconds: 2);
   final Duration _logoDuration = const Duration(seconds: 3);
   final Duration _transitionDuration = const Duration(milliseconds: 500);
 
@@ -64,8 +64,27 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     setState(() => _showLottie = false);
 
     setState(() => _showLogo = true);
-    _elementController.forward();
-    await Future.delayed(_logoDuration + _transitionDuration);
+
+    final logoController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+
+    final fade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: logoController, curve: Curves.easeInOut),
+    );
+    final scale = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: logoController, curve: Curves.easeOutBack),
+    );
+
+    setState(() {
+      _fadeAnimation = fade;
+      _scaleAnimation = scale;
+    });
+
+    logoController.forward();
+    await Future.delayed(_logoDuration + const Duration(seconds: 2));
+    logoController.dispose();
 
     if (!mounted) return;
     Navigator.pushReplacementNamed(context, '/login');
@@ -123,8 +142,8 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                   height: 200,
                   onLoaded: (composition) {
                     _lottieController
-                      ..duration = composition.duration
-                      ..forward();
+                      ..duration = composition.duration * 1
+                      ..forward(from: 0.0);
                   },
                 ),
               ),
@@ -138,8 +157,8 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
                     return Image.asset(
                       'assets/images/logo.png',
-                      width: screenWidth * 0.6,
-                      height: screenHeight * 0.3,
+                      width: screenWidth * 1,
+                      height: screenHeight * 1,
                       fit: BoxFit.contain,
                     );
                   },
