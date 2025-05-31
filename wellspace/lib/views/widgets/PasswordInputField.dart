@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-const Color wellSpaceTeal600 = Color(0xFF0D9488);
-const Color wellSpaceMutedForeground = Color(0xFF6B7280);
-const Color wellSpaceInputBorder = Color(0xFFD1D5DB);
-const Color wellSpaceErrorRed = Color(0xFFEF4444);
+const Color primaryBlue = Color(0xFF1976D2);
+const Color textPrimary = Color(0xFF212121);
+const Color textSecondary = Color(0xFF757575);
+const Color inputBorderColor = Color(0xFFBDBDBD);
+const Color errorColor = Color(0xFFD32F2F);
 
 class PasswordInputField extends StatefulWidget {
   final TextEditingController controller;
@@ -12,7 +13,7 @@ class PasswordInputField extends StatefulWidget {
   final Function(String)? onChanged;
   final String? Function(String?)? validator;
   final bool initialObscureText;
-  final bool showErrorBorder;
+  final bool showErrorBorder; 
 
   const PasswordInputField({
     super.key,
@@ -46,39 +47,58 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
 
   @override
   Widget build(BuildContext context) {
+    
+    bool displayErrorFromValidator = false;
+    if (widget.validator != null) {
+      final validationResult = widget.validator!(widget.controller.text);
+      if (validationResult != null && validationResult.isNotEmpty) {
+        displayErrorFromValidator = true;
+      }
+    }
+    final bool shouldCurrentlyDisplayError = widget.showErrorBorder || displayErrorFromValidator;
+
     return TextFormField(
       controller: widget.controller,
+      style: const TextStyle(color: textPrimary),
       obscureText: _obscureText,
       decoration: InputDecoration(
         labelText: widget.labelText,
+        labelStyle: const TextStyle(color: textSecondary),
         hintText: widget.hintText,
-        prefixIcon: const Icon(Icons.lock_outline_rounded, color: wellSpaceTeal600),
+        hintStyle: TextStyle(color: textSecondary.withOpacity(0.7)),
+        prefixIcon: const Icon(Icons.lock_outline_rounded, color: primaryBlue),
         suffixIcon: IconButton(
           icon: Icon(
             _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            color: wellSpaceMutedForeground,
+            color: textSecondary,
           ),
           onPressed: _toggleVisibility,
         ),
+       
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: widget.showErrorBorder ? wellSpaceErrorRed : wellSpaceInputBorder),
+          borderSide: BorderSide(color: shouldCurrentlyDisplayError ? errorColor : inputBorderColor),
         ),
+     
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: widget.showErrorBorder ? wellSpaceErrorRed : wellSpaceInputBorder),
+          borderSide: BorderSide(color: shouldCurrentlyDisplayError ? errorColor : inputBorderColor),
         ),
+       
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: widget.showErrorBorder ? wellSpaceErrorRed : wellSpaceTeal600, width: 2.0),
+       
+          borderSide: BorderSide(color: shouldCurrentlyDisplayError ? errorColor : primaryBlue, width: 2.0),
         ),
+       
         errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
-            borderSide: const BorderSide(color: wellSpaceErrorRed, width: 1.0),
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: const BorderSide(color: errorColor, width: 1.0),
         ),
+        
         focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
-            borderSide: const BorderSide(color: wellSpaceErrorRed, width: 2.0),
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: const BorderSide(color: errorColor, width: 2.0),
         ),
       ),
       onChanged: widget.onChanged,
