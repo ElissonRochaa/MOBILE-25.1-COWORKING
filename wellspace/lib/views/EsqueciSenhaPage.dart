@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/PasswordRecoveryViewModel.dart';
-import 'package:Wellspace/views/widgets/FormCardLayout.dart';
+import 'package:Wellspace/views/widgets/FormCardLayout.dart'; 
 
-const Color wellSpaceTeal100 = Color(0xFFCCFBF1);
-const Color wellSpaceTeal600 = Color(0xFF0D9488);
-const Color wellSpaceGreen100 = Color(0xFFDCFCE7);
-const Color wellSpaceGreen600 = Color(0xFF16A34A);
-const Color wellSpaceErrorRed = Color(0xFFEF4444);
-const Color wellSpaceInputBorder = Color(0xFFD1D5DB);
-const Color wellSpaceMutedForeground = Color(0xFF6B7280);
+
+const Color primaryBlue = Color(0xFF1976D2);
+const Color pageBackground = Colors.white; 
+const Color cardBackground = Colors.white; 
+const Color textOnPrimary = Colors.white;
+const Color textPrimary = Color(0xFF212121);
+const Color textSecondary = Color(0xFF757575);
+const Color inputBorderColor = Color(0xFFBDBDBD);
+const Color errorColor = Color(0xFFD32F2F);
 
 class ForgotPasswordForm extends StatefulWidget {
   const ForgotPasswordForm({super.key});
@@ -32,7 +34,21 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
       return;
     }
     final viewModel = context.read<PasswordRecoveryViewModel>();
+   
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(textOnPrimary)),
+            SizedBox(width: 16),
+            Text('Enviando link...', style: TextStyle(color: textOnPrimary)),
+          ],
+        ),
+        backgroundColor: primaryBlue,
+      ),
+    );
     await viewModel.requestPasswordResetLink(_emailController.text);
+    if(mounted) ScaffoldMessenger.of(context).removeCurrentSnackBar();
   }
 
   Widget _buildEmailInputFormContent(BuildContext context, PasswordRecoveryViewModel viewModel) {
@@ -43,26 +59,33 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
         children: <Widget>[
           TextFormField(
             controller: _emailController,
+            style: const TextStyle(color: textPrimary),
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
               labelText: "E-mail",
+              labelStyle: const TextStyle(color: textSecondary),
               hintText: "Digite seu e-mail cadastrado",
-              prefixIcon: const Icon(Icons.email_outlined, color: wellSpaceTeal600),
+              hintStyle: TextStyle(color: textSecondary.withOpacity(0.7)),
+              prefixIcon: const Icon(Icons.email_outlined, color: primaryBlue),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
-                borderSide: const BorderSide(color: wellSpaceInputBorder),
+                borderSide: const BorderSide(color: inputBorderColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                borderSide: const BorderSide(color: inputBorderColor),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
-                borderSide: const BorderSide(color: wellSpaceTeal600, width: 2.0),
+                borderSide: const BorderSide(color: primaryBlue, width: 2.0),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
-                borderSide: const BorderSide(color: wellSpaceErrorRed, width: 1.0),
+                borderSide: const BorderSide(color: errorColor, width: 1.0),
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
-                borderSide: const BorderSide(color: wellSpaceErrorRed, width: 2.0),
+                borderSide: const BorderSide(color: errorColor, width: 2.0),
               ),
             ),
             validator: (value) {
@@ -75,33 +98,33 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
               return null;
             },
             onChanged: (value) {
-              if (viewModel.status == PasswordRecoveryStatus.error) {
+              if (viewModel.status == PasswordRecoveryStatus.error && viewModel.errorMessage.isNotEmpty) {
                 viewModel.resetToInitial();
               }
             },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
           ),
           const SizedBox(height: 16),
           if (viewModel.status == PasswordRecoveryStatus.error && viewModel.errorMessage.isNotEmpty)
             Container(
               width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 16.0),
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
               decoration: BoxDecoration(
-                color: wellSpaceErrorRed.withOpacity(0.1),
+                color: errorColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: wellSpaceErrorRed.withOpacity(0.3)),
+                border: Border.all(color: errorColor.withOpacity(0.3)),
               ),
               child: Text(
                 viewModel.errorMessage,
-                style: const TextStyle(color: wellSpaceErrorRed, fontSize: 14),
+                style: const TextStyle(color: errorColor, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
             ),
-          if (viewModel.status == PasswordRecoveryStatus.error && viewModel.errorMessage.isNotEmpty)
-            const SizedBox(height: 16),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: wellSpaceTeal600,
-              foregroundColor: Colors.white,
+              backgroundColor: primaryBlue,
+              foregroundColor: textOnPrimary,
               minimumSize: const Size(double.infinity, 52),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0),
@@ -117,7 +140,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
                     height: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor: AlwaysStoppedAnimation<Color>(textOnPrimary),
                     ),
                   )
                 : const Text("Enviar Link de Recuperação", style: TextStyle(fontSize: 16)),
@@ -125,17 +148,21 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
           const SizedBox(height: 24),
           TextButton(
             onPressed: () {
+              context.read<PasswordRecoveryViewModel>().resetToInitial();
               Navigator.of(context).pop();
             },
             child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.arrow_back_ios_new, size: 16.0, color: wellSpaceMutedForeground),
+                const Icon(Icons.arrow_back_ios_new, size: 16.0, color: primaryBlue),
                 const SizedBox(width: 4),
                 Text(
                   "Voltar para o Login",
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: wellSpaceMutedForeground),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: primaryBlue,
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ],
             ),
@@ -152,14 +179,14 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
         RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: wellSpaceMutedForeground),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: textSecondary),
             children: <TextSpan>[
               const TextSpan(text: "Enviamos um link de redefinição de senha para "),
               TextSpan(
                 text: viewModel.submittedEmail,
                 style: const TextStyle(
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF1F2937),
+                  color: textPrimary,
                 ),
               ),
             ],
@@ -168,14 +195,14 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
         const SizedBox(height: 20),
         Text(
           "Por favor, verifique sua caixa de entrada e também a pasta de spam.",
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: wellSpaceMutedForeground),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: wellSpaceTeal600,
-            foregroundColor: Colors.white,
+            backgroundColor: primaryBlue,
+            foregroundColor: textOnPrimary,
             minimumSize: const Size(double.infinity, 48),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8.0),
@@ -183,15 +210,15 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
           ),
           onPressed: () {
             viewModel.resetToInitial();
-            Navigator.of(context).pushReplacementNamed('/login');
+            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
           },
           child: const Text("Voltar para o Login"),
         ),
         const SizedBox(height: 12),
         OutlinedButton(
           style: OutlinedButton.styleFrom(
-            side: BorderSide(color: wellSpaceTeal600.withOpacity(0.5)),
-            foregroundColor: wellSpaceTeal600,
+            side: const BorderSide(color: inputBorderColor), 
+            foregroundColor: textPrimary, 
             minimumSize: const Size(double.infinity, 48),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8.0),
@@ -201,7 +228,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
             viewModel.resetToInitial();
             _emailController.clear();
           },
-          child: const Text("Tentar outro e-mail"),
+          child: const Text("Tentar outro e-mail", style: TextStyle(fontWeight: FontWeight.w600)),
         ),
       ],
     );
@@ -211,62 +238,76 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<PasswordRecoveryViewModel>();
 
+    String title;
+    String description;
+    Widget iconWidget;
+    Widget contentChild;
+    VoidCallback? appBarBackButtonAction;
+
     if (viewModel.status == PasswordRecoveryStatus.emailSent) {
-      return FormCardLayout(
-        iconWidget: Container(
-          padding: const EdgeInsets.all(12.0),
-          decoration: const BoxDecoration(
-            color: wellSpaceGreen100,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.check_circle_outline,
-            color: wellSpaceGreen600,
-            size: 32.0,
-          ),
+      title = "Verifique seu E-mail!";
+      description = "";
+      iconWidget = Container(
+        padding: const EdgeInsets.all(12.0),
+        decoration: const BoxDecoration(
+          color: primaryBlue, 
+          shape: BoxShape.circle,
         ),
-        title: "Verifique seu E-mail!",
-        description: "",
-        child: _buildEmailSentContent(context, viewModel),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: wellSpaceTeal600),
-            onPressed: () {
-              viewModel.resetToInitial();
-              _emailController.clear();
-            },
-          ),
+        child: const Icon(
+          Icons.check_circle_outline,
+          color: textOnPrimary, 
+          size: 32.0,
         ),
       );
+      contentChild = _buildEmailSentContent(context, viewModel);
+      appBarBackButtonAction = () {
+        viewModel.resetToInitial();
+        _emailController.clear();
+      };
     } else {
-      return FormCardLayout(
-        iconWidget: Container(
-          padding: const EdgeInsets.all(12.0),
-          decoration: const BoxDecoration(
-            color: wellSpaceTeal100,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.mail_outline,
-            color: wellSpaceTeal600,
-            size: 32.0,
-          ),
+      title = "Esqueceu sua senha?";
+      description = "Não se preocupe! Digite seu e-mail abaixo e enviaremos um link para você criar uma nova senha.";
+      iconWidget = Container(
+        padding: const EdgeInsets.all(12.0),
+        decoration: const BoxDecoration(
+          color: primaryBlue, 
+          shape: BoxShape.circle,
         ),
-        title: "Esqueceu sua senha?",
-        description: "Não se preocupe! Digite seu e-mail abaixo e enviaremos um link para você criar uma nova senha.",
-        child: _buildEmailInputFormContent(context, viewModel),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: wellSpaceTeal600),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
+        child: const Icon(
+          Icons.mail_outline,
+          color: textOnPrimary, 
+          size: 32.0,
         ),
       );
+      contentChild = _buildEmailInputFormContent(context, viewModel);
+      appBarBackButtonAction = () {
+        viewModel.resetToInitial();
+        Navigator.of(context).pop();
+      };
     }
+
+    return FormCardLayout(
+      iconWidget: iconWidget,
+      title: title,
+      titleStyle: const TextStyle(
+        fontSize: 26,
+        fontWeight: FontWeight.bold,
+        color: textPrimary,
+      ),
+      description: description,
+      descriptionStyle: const TextStyle( 
+        fontSize: 16,
+        color: textSecondary,
+      ),
+      child: contentChild,
+      appBar: AppBar(
+        backgroundColor: pageBackground, 
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: primaryBlue), 
+          onPressed: appBarBackButtonAction,
+        ),
+      ),
+    );
   }
 
   @override
