@@ -1,8 +1,7 @@
-import 'dart:io' as io;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../viewmodels/cadastrarUsuario.dart';
 
 class CadastroPage extends StatefulWidget {
@@ -18,11 +17,11 @@ class _CadastroPageState extends State<CadastroPage> {
   bool _obscureTextSenha = true;
   bool _obscureTextConfirmarSenha = true;
   late TextEditingController _dataNascimentoController;
+  Uint8List? _imageBytes;
 
   @override
   void initState() {
     super.initState();
-    // Inicializa o controller com o valor do ViewModel
     _dataNascimentoController = TextEditingController(
       text: widget.viewModel.dataNascimento.toLocal().toString().split(' ')[0],
     );
@@ -37,9 +36,12 @@ class _CadastroPageState extends State<CadastroPage> {
   Future<void> _getImage() async {
     final ImagePicker _picker = ImagePicker();
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
     if (image != null) {
+      final bytes = await image.readAsBytes();
       setState(() {
-        widget.viewModel.fotoPerfil = image; // image é do tipo XFile
+        widget.viewModel.fotoPerfil = image;
+        _imageBytes = bytes;
       });
     }
   }
@@ -76,42 +78,35 @@ class _CadastroPageState extends State<CadastroPage> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Nome completo
                     TextFormField(
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.person),
                         labelText: 'Nome Completo',
                       ),
-                      validator: (value) => value == null || value.isEmpty
-                          ? 'Por favor, insira seu nome'
-                          : null,
+                      validator: (value) =>
+                          value == null || value.isEmpty ? 'Por favor, insira seu nome' : null,
                       onSaved: (value) => widget.viewModel.nome = value ?? '',
                     ),
                     const SizedBox(height: 16),
 
-                    // Email
                     TextFormField(
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.email),
                         labelText: 'Email',
                       ),
-                      validator: (value) => value == null || value.isEmpty
-                          ? 'Por favor, insira seu e-mail'
-                          : null,
+                      validator: (value) =>
+                          value == null || value.isEmpty ? 'Por favor, insira seu e-mail' : null,
                       onSaved: (value) => widget.viewModel.email = value ?? '',
                     ),
                     const SizedBox(height: 16),
 
-                    // Senha
                     TextFormField(
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.lock),
                         labelText: 'Senha',
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureTextSenha
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                            _obscureTextSenha ? Icons.visibility_off : Icons.visibility,
                           ),
                           onPressed: () {
                             setState(() {
@@ -121,28 +116,23 @@ class _CadastroPageState extends State<CadastroPage> {
                         ),
                       ),
                       obscureText: _obscureTextSenha,
-                      validator: (value) => value == null || value.isEmpty
-                          ? 'Por favor, insira uma senha'
-                          : null,
+                      validator: (value) =>
+                          value == null || value.isEmpty ? 'Por favor, insira uma senha' : null,
                       onSaved: (value) => widget.viewModel.senha = value ?? '',
                     ),
                     const SizedBox(height: 16),
 
-                    // Confirmar senha
                     TextFormField(
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.lock_outline),
                         labelText: 'Confirmar Senha',
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureTextConfirmarSenha
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                            _obscureTextConfirmarSenha ? Icons.visibility_off : Icons.visibility,
                           ),
                           onPressed: () {
                             setState(() {
-                              _obscureTextConfirmarSenha =
-                                  !_obscureTextConfirmarSenha;
+                              _obscureTextConfirmarSenha = !_obscureTextConfirmarSenha;
                             });
                           },
                         ),
@@ -151,12 +141,10 @@ class _CadastroPageState extends State<CadastroPage> {
                       validator: (value) => value == null || value.isEmpty
                           ? 'Por favor, confirme sua senha'
                           : null,
-                      onSaved: (value) =>
-                          widget.viewModel.confirmarSenha = value ?? '',
+                      onSaved: (value) => widget.viewModel.confirmarSenha = value ?? '',
                     ),
                     const SizedBox(height: 16),
 
-                    // Data de nascimento - com controller
                     TextFormField(
                       controller: _dataNascimentoController,
                       decoration: const InputDecoration(
@@ -164,9 +152,9 @@ class _CadastroPageState extends State<CadastroPage> {
                         labelText: 'Data de Nascimento',
                         hintText: 'AAAA-MM-DD',
                       ),
-                      readOnly: false, // Permite digitação manual
+                      readOnly: true,
                       onTap: () async {
-                        FocusScope.of(context).requestFocus(FocusNode());
+                        FocusScope.of(context).unfocus();
                         final selectedDate = await showDatePicker(
                           context: context,
                           initialDate: widget.viewModel.dataNascimento,
@@ -194,14 +182,12 @@ class _CadastroPageState extends State<CadastroPage> {
                       },
                       onSaved: (value) {
                         if (value != null && value.isNotEmpty) {
-                          widget.viewModel.dataNascimento =
-                              DateTime.parse(value);
+                          widget.viewModel.dataNascimento = DateTime.parse(value);
                         }
                       },
                     ),
                     const SizedBox(height: 16),
 
-                    // Imagem de perfil
                     GestureDetector(
                       onTap: _getImage,
                       child: Container(
@@ -211,27 +197,18 @@ class _CadastroPageState extends State<CadastroPage> {
                           shape: BoxShape.circle,
                           color: Colors.grey[300],
                         ),
-                        child: widget.viewModel.fotoPerfil == null
+                        child: _imageBytes == null
                             ? const Icon(Icons.camera_alt, color: Colors.white)
-                            : (kIsWeb
-                                ? Image.network(
-                                    widget.viewModel.fotoPerfil!.path,
-                                    fit: BoxFit.cover,
-                                    height: 100,
-                                    width: 100,
-                                  )
-                                : ClipOval(
-                                    child: Image.file(
-                                      io.File(
-                                          widget.viewModel.fotoPerfil!.path),
-                                      fit: BoxFit.cover,
-                                      height: 100,
-                                      width: 100,
-                                    ),
-                                  )),
+                            : ClipOval(
+                                child: Image.memory(
+                                  _imageBytes!,
+                                  fit: BoxFit.cover,
+                                  height: 100,
+                                  width: 100,
+                                ),
+                              ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
 
                     SizedBox(
@@ -258,10 +235,7 @@ class _CadastroPageState extends State<CadastroPage> {
                           onPressed: () {},
                         ),
                         OutlinedButton.icon(
-                          icon: const FaIcon(
-                            FontAwesomeIcons.facebook,
-                            size: 18,
-                          ),
+                          icon: const FaIcon(FontAwesomeIcons.facebook, size: 18),
                           label: const Text("Facebook"),
                           onPressed: () {},
                         ),
