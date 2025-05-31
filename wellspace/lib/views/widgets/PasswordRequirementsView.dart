@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:Wellspace/viewmodels/PasswordRecoveryViewModel.dart';
 
-const Color wellSpaceGreen600 = Color(0xFF16A34A);
-const Color wellSpaceErrorRed = Color(0xFFEF4444);
-const Color wellSpaceMutedForeground = Color(0xFF6B7280);
+
+const Color primaryBlue = Color(0xFF1976D2); 
+const Color errorColor = Color(0xFFD32F2F); 
+const Color textSecondary = Color(0xFF757575);
 
 class PasswordRequirementsView extends StatelessWidget {
   final String password;
@@ -24,28 +25,34 @@ class PasswordRequirementsView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Requisitos da senha:",
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: wellSpaceMutedForeground, fontWeight: FontWeight.w500),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6.0),
+          child: Text(
+            "Requisitos da senha:",
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: textSecondary, 
+                  fontWeight: FontWeight.w500,
+                ),
+          ),
         ),
-        const SizedBox(height: 6.0),
         ...requirements.map((req) {
           final bool isValid = req.isValid;
           return Padding(
-            padding: const EdgeInsets.only(bottom: 4.0),
+            padding: const EdgeInsets.symmetric(vertical: 2.0), 
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(
-                  isValid ? Icons.check_circle : Icons.cancel_outlined,
-                  color: isValid ? wellSpaceGreen600 : wellSpaceErrorRed,
-                  size: 16.0,
+                  isValid ? Icons.check_circle_outline : Icons.highlight_off_outlined, 
+                  color: isValid ? primaryBlue : errorColor,
+                  size: 18.0, 
                 ),
                 const SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
                     req.label,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: wellSpaceMutedForeground,
+                          color: textSecondary, 
                         ),
                     overflow: TextOverflow.ellipsis,
                   ),
