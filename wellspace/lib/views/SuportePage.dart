@@ -1,13 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/SuporteViewModel.dart';
 
-class SuportePage extends StatefulWidget {
+class SuportePage extends StatelessWidget {
   const SuportePage({super.key});
 
   @override
-  State<SuportePage> createState() => _SuportePageState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => SuporteViewModel(),
+      child: const _SuporteView(),
+    );
+  }
 }
 
-class _SuportePageState extends State<SuportePage> {
+class _SuporteView extends StatefulWidget {
+  const _SuporteView();
+
+  @override
+  State<_SuporteView> createState() => _SuporteViewState();
+}
+
+class _SuporteViewState extends State<_SuporteView> {
   final List<Map<String, String>> _faq = [
     {
       "question": "Como faço uma reserva de sala?",
@@ -31,25 +45,12 @@ class _SuportePageState extends State<SuportePage> {
     },
   ];
 
-  final List<String> _chatMessages = [
-    "Olá! Preciso de ajuda com uma reserva.",
-    "Claro! Qual o número da reserva?",
-    "É a #12345. A sala não estava disponível quando cheguei.",
-    "Sentimos muito por isso. Vamos verificar com o anfitrião e te retornamos em breve."
-  ];
-
   final TextEditingController _messageController = TextEditingController();
-
-  void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
-    setState(() {
-      _chatMessages.add(_messageController.text.trim());
-      _messageController.clear();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<SuporteViewModel>();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Suporte')),
       body: Padding(
@@ -91,9 +92,10 @@ class _SuportePageState extends State<SuportePage> {
             Expanded(
               flex: 3,
               child: ListView.builder(
-                itemCount: _chatMessages.length,
+                itemCount: viewModel.chatMessages.length,
                 itemBuilder: (context, index) {
-                  final isUser = index % 2 == 0;
+                  final message = viewModel.chatMessages[index];
+                  final isUser = message['from'] == 'user';
                   return Align(
                     alignment:
                         isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -107,12 +109,13 @@ class _SuportePageState extends State<SuportePage> {
                             : Colors.grey.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(_chatMessages[index]),
+                      child: Text(message['text']!),
                     ),
                   );
                 },
               ),
             ),
+            if (viewModel.isLoading) const CircularProgressIndicator(),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -120,12 +123,19 @@ class _SuportePageState extends State<SuportePage> {
                   child: TextField(
                     controller: _messageController,
                     decoration: const InputDecoration(
-                        hintText: "Digite sua mensagem..."),
+                      hintText: "Digite sua mensagem...",
+                    ),
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: _sendMessage,
+                  onPressed: viewModel.isLoading
+                      ? null
+                      : () {
+                          final text = _messageController.text;
+                          _messageController.clear();
+                          viewModel.sendMessage(text);
+                        },
                 )
               ],
             )
