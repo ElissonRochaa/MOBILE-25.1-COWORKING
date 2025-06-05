@@ -89,21 +89,32 @@ class _SideMenuState extends State<SideMenu> {
               : null,
         ),
         const SizedBox(height: 10),
-        Text(
-          _usuario!.nome,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const Text(
-          'Ver perfil',
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 14,
+        GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.pushReplacementNamed(context, '/Perfil');
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _usuario!.nome,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const Text(
+                'Ver perfil',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 8),
