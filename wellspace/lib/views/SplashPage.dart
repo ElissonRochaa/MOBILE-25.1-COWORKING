@@ -87,7 +87,12 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     logoController.dispose();
 
     if (!mounted) return;
-    Navigator.pushReplacementNamed(context, '/login');
+
+    final currentRoute = ModalRoute.of(context)?.settings.name ?? '';
+
+    if (!currentRoute.startsWith('/reset-password')) {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   @override
@@ -157,8 +162,8 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
                     return Image.asset(
                       'assets/images/logo.png',
-                      width: screenWidth * 1,
-                      height: screenHeight * 1,
+                      width: screenWidth * 0.8,
+                      height: screenHeight * 0.8,
                       fit: BoxFit.contain,
                     );
                   },
