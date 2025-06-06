@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/CadastroSalaViewmodel.dart';
+import '../../viewmodels/CadastroSalaViewModel.dart';
 import '../viewmodels/SalaImagemViewModel.dart';
 import 'CadastroSalaImagemPage.dart';
 import '../views/widgets/sideMenu.dart';
@@ -21,9 +21,11 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
   void initState() {
     super.initState();
     _controllerHorarioInicio = TextEditingController(
-        text: _formatTimeOfDay(viewModel.disponibilidadeInicio));
+      text: _formatTimeOfDay(viewModel.disponibilidadeInicio),
+    );
     _controllerHorarioFim = TextEditingController(
-        text: _formatTimeOfDay(viewModel.disponibilidadeFim));
+      text: _formatTimeOfDay(viewModel.disponibilidadeFim),
+    );
   }
 
   @override
@@ -70,7 +72,9 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
     if (form != null && form.validate()) {
       form.save();
       final salaCadastrada = await viewModel.cadastrarSala(context);
-      if (salaCadastrada != null && salaCadastrada.id != null && salaCadastrada.id!.isNotEmpty) {
+      if (salaCadastrada != null &&
+          salaCadastrada.id != null &&
+          salaCadastrada.id!.isNotEmpty) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -87,7 +91,9 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, preencha todos os campos obrigatórios.')),
+        const SnackBar(
+          content: Text('Por favor, preencha todos os campos obrigatórios.'),
+        ),
       );
     }
   }
@@ -96,6 +102,7 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
     Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
   }
 
+  bool mostrarDias = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,7 +122,6 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
-
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'Nome da Sala',
@@ -123,12 +129,12 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                   helperText: 'Um nome único e descritivo para a sala',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Informe o nome da sala' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Informe o nome da sala'
+                    : null,
                 onSaved: (value) => viewModel.nomeSala = value ?? '',
               ),
-
               const SizedBox(height: 16),
-
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'Tamanho da Sala',
@@ -136,33 +142,35 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                   helperText: 'Informe o tamanho da sala em metros quadrados',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Informe o tamanho' : null,
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Informe o tamanho' : null,
                 onSaved: (value) => viewModel.tamanho = value ?? '',
               ),
-
               const SizedBox(height: 16),
-
               TextFormField(
                 maxLines: 4,
                 decoration: const InputDecoration(
                   labelText: 'Descrição',
                   hintText: 'Descreva a sala em detalhes...',
-                  helperText: 'Forneça uma descrição detalhada da sala, incluindo equipamentos e recursos disponíveis',
+                  helperText:
+                      'Forneça uma descrição detalhada da sala, incluindo equipamentos e recursos disponíveis',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Informe a descrição' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Informe a descrição'
+                    : null,
                 onSaved: (value) => viewModel.descricao = value ?? '',
               ),
-
               const SizedBox(height: 16),
-
               DropdownButtonFormField<String>(
                 decoration: const InputDecoration(
                   labelText: 'Disponibilidade da Sala',
                   border: OutlineInputBorder(),
                   helperText: 'Selecione o status de disponibilidade',
                 ),
-                value: viewModel.disponibilidadeSala.isNotEmpty ? viewModel.disponibilidadeSala : null,
+                value: viewModel.disponibilidadeSala.isNotEmpty
+                    ? viewModel.disponibilidadeSala
+                    : null,
                 items: ['DISPONIVEL', 'INDISPONIVEL', 'RESERVADA']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
@@ -173,18 +181,17 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                     });
                   }
                 },
-                validator: (value) => value == null || value.isEmpty ? 'Selecione a disponibilidade' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Selecione a disponibilidade'
+                    : null,
                 onSaved: (value) => viewModel.disponibilidadeSala = value ?? '',
               ),
-
               const SizedBox(height: 32),
-
               const Text(
                 'Preços e Horários',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
-
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'Preço por Hora (R\$)',
@@ -197,27 +204,87 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Informe um valor';
                   final val = double.tryParse(value.replaceAll(',', '.'));
-                  if (val == null || val <= 0) return 'Informe um valor positivo';
+                  if (val == null || val <= 0)
+                    return 'Informe um valor positivo';
                   return null;
                 },
                 onSaved: (value) => viewModel.precoHora = value ?? '',
               ),
-
               const SizedBox(height: 24),
-
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Disponibilidade na Semana',
-                  hintText: 'Ex: Segunda a Sexta',
-                  helperText: 'Dias de funcionamento da sala',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => value == null || value.isEmpty ? 'Informe os dias da semana' : null,
-                onSaved: (value) => viewModel.disponibilidadeDiaSemana = value ?? '',
+              StatefulBuilder(
+                builder: (context, setStateLocal) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            mostrarDias = !mostrarDias;
+                          });
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Dias Disponíveis na Semana',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600),
+                            ),
+                            Icon(
+                              mostrarDias
+                                  ? Icons.expand_less
+                                  : Icons.expand_more,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (mostrarDias)
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 4,
+                          children: [
+                            'Seg',
+                            'Ter',
+                            'Qua',
+                            'Qui',
+                            'Sex',
+                            'Sab',
+                            'Dom',
+                          ].map((dia) {
+                            return SizedBox(
+                              width:
+                                  (MediaQuery.of(context).size.width - 96) / 2,
+                              child: CheckboxListTile(
+                                dense: true,
+                                visualDensity: VisualDensity.compact,
+                                title: Text(
+                                  dia,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                value: viewModel.diasDisponiveis.contains(dia),
+                                onChanged: (bool? selecionado) {
+                                  setState(() {
+                                    if (selecionado == true) {
+                                      viewModel.diasDisponiveis.add(dia);
+                                    } else {
+                                      viewModel.diasDisponiveis.remove(dia);
+                                    }
+                                  });
+                                  setStateLocal(() {});
+                                },
+                                controlAffinity:
+                                    ListTileControlAffinity.leading,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                    ],
+                  );
+                },
               ),
-
               const SizedBox(height: 24),
-
               Row(
                 children: [
                   Expanded(
@@ -249,9 +316,7 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 32),
-
               Row(
                 children: [
                   Expanded(
@@ -263,7 +328,8 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                         foregroundColor: Colors.blue[700],
                         side: BorderSide(color: Colors.blue[700]!),
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        textStyle: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -274,10 +340,11 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                       label: const Text('Próximo'),
                       onPressed: _salvarSala,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[700], // Azul forte
+                        backgroundColor: Colors.blue[700],
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        textStyle: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
