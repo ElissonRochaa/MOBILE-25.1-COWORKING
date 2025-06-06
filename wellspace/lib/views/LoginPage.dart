@@ -1,5 +1,7 @@
+import 'package:Wellspace/views/widgets/ThemeNotifer.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '../services/UsuarioService.dart';
 import '../config/JwtDecoder.dart';
 
@@ -26,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
 
         if (token != null) {
           Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Login bem-sucedido!')),
           );
@@ -35,7 +37,8 @@ class _LoginPageState extends State<LoginPage> {
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Erro no login: Token não encontrado')),
+            const SnackBar(
+                content: Text('Erro no login: Token não encontrado')),
           );
         }
       } catch (e) {
@@ -61,6 +64,25 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: Icon(
+              Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+            ),
+            tooltip: Theme.of(context).brightness == Brightness.dark
+                ? 'Mudar para tema claro'
+                : 'Mudar para tema escuro',
+            onPressed: () {
+              print(
+                  "HomePage: Botão de tema pressionado. Chamando toggleTheme().");
+              Provider.of<ThemeNotifier>(context, listen: false).toggleTheme();
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -101,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                           return 'Por favor, insira seu e-mail';
                         }
                         if (!value.contains('@')) {
-                            return 'Por favor, insira um e-mail válido';
+                          return 'Por favor, insira um e-mail válido';
                         }
                         return null;
                       },
@@ -116,7 +138,9 @@ class _LoginPageState extends State<LoginPage> {
                         prefixIcon: const Icon(Icons.lock),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureText ? Icons.visibility_off : Icons.visibility,
+                            _obscureText
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                           ),
                           onPressed: () {
                             setState(() {
@@ -150,10 +174,12 @@ class _LoginPageState extends State<LoginPage> {
                                   _lembrarDeMim = value!;
                                 });
                               },
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
                               visualDensity: VisualDensity.compact,
                             ),
-                            const Text('Lembrar de mim', style: TextStyle(fontSize: 13)),
+                            const Text('Lembrar de mim',
+                                style: TextStyle(fontSize: 13)),
                           ],
                         ),
                         TextButton(
@@ -174,7 +200,8 @@ class _LoginPageState extends State<LoginPage> {
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          textStyle: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         child: const Text('Entrar'),
                       ),
@@ -186,29 +213,37 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         OutlinedButton.icon(
-                          icon: const FaIcon(FontAwesomeIcons.google, size: 18, color: Colors.red),
+                          icon: const FaIcon(FontAwesomeIcons.google,
+                              size: 18, color: Colors.red),
                           label: const Text("Google"),
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Login com Google (não implementado)')),
+                              const SnackBar(
+                                  content: Text(
+                                      'Login com Google (não implementado)')),
                             );
                           },
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
                             textStyle: const TextStyle(fontSize: 14),
                           ),
                         ),
                         OutlinedButton.icon(
-                          icon: const FaIcon(FontAwesomeIcons.facebook, size: 18, color: Colors.blueAccent),
+                          icon: const FaIcon(FontAwesomeIcons.facebook,
+                              size: 18, color: Colors.blueAccent),
                           label: const Text("Facebook"),
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Login com Facebook (não implementado)')),
+                              const SnackBar(
+                                  content: Text(
+                                      'Login com Facebook (não implementado)')),
                             );
                           },
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              textStyle: const TextStyle(fontSize: 14),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                            textStyle: const TextStyle(fontSize: 14),
                           ),
                         ),
                       ],
@@ -218,7 +253,8 @@ class _LoginPageState extends State<LoginPage> {
                       onTap: _navigateToCadastroPage,
                       child: const Text(
                         'Não tem uma conta? Cadastre-se',
-                        style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            color: Colors.blue, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],

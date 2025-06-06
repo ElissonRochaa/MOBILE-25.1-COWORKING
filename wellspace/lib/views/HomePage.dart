@@ -26,23 +26,6 @@ class HomePage extends StatelessWidget {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.dark
-                  ? Icons.light_mode
-                  : Icons.dark_mode,
-            ),
-            tooltip: Theme.of(context).brightness == Brightness.dark
-                ? 'Mudar para tema claro'
-                : 'Mudar para tema escuro',
-            onPressed: () {
-              print(
-                  "HomePage: Botão de tema pressionado. Chamando toggleTheme().");
-              Provider.of<ThemeNotifier>(context, listen: false).toggleTheme();
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(

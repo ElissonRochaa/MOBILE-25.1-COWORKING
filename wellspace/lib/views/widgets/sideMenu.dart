@@ -1,4 +1,6 @@
+import 'package:Wellspace/views/widgets/ThemeNotifer.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Wellspace/models/Usuario.dart';
 import 'package:Wellspace/services/UsuarioService.dart';
 
@@ -133,7 +135,34 @@ class _SideMenuState extends State<SideMenu> {
               color: Colors.blue,
             ),
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: _buildDrawerHeaderContent(),
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: IconButton(
+                    icon: Icon(
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Icons.light_mode
+                          : Icons.dark_mode,
+                      color: Colors.white,
+                    ),
+                    tooltip: Theme.of(context).brightness == Brightness.dark
+                        ? 'Mudar para tema claro'
+                        : 'Mudar para tema escuro',
+                    onPressed: () {
+                      print(
+                          "SideMenu: Botão de tema pressionado. Chamando toggleTheme().");
+                      Provider.of<ThemeNotifier>(context, listen: false)
+                          .toggleTheme();
+                    },
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: _buildDrawerHeaderContent(),
+                ),
+              ],
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.home),
