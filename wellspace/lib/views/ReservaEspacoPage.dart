@@ -1,312 +1,160 @@
 import 'package:flutter/material.dart';
-import '../models/Sala.dart';
-
-class ReservaEspacoScreen extends StatefulWidget {
+import 'package:Wellspace/models/Sala.dart';
+import 'package:Wellspace/views/widgets/BookingStep1.dart';
+import 'package:Wellspace/views/widgets/BookingStep2.dart';
+import 'package:Wellspace/views/widgets/BookingStep3.dart';
+import 'package:Wellspace/views/widgets/BookingStep4.dart';
+import 'package:Wellspace/views/ConfirmationPage.dart';
+class ReservaStepperScreen extends StatefulWidget {
   final Sala sala;
-  final List<String> imagens;
 
-  const ReservaEspacoScreen({
-    super.key,
-    required this.sala,
-    required this.imagens,
-  });
+  const ReservaStepperScreen({super.key, required this.sala});
 
   @override
-  State<ReservaEspacoScreen> createState() => _ReservaEspacoScreenState();
+  State<ReservaStepperScreen> createState() => _ReservaStepperScreenState();
 }
 
-class _ReservaEspacoScreenState extends State<ReservaEspacoScreen> {
-  DateTime? _selectedDate;
-  TimeOfDay? _startTime;
-  TimeOfDay? _endTime;
-  int _people = 1;
+class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
+  int _currentStep = 0;
+  
+  String bookingType = 'immediate';
+  DateTime selectedDate = DateTime.now();
+  TimeOfDay startTime = TimeOfDay.now();
+  TimeOfDay endTime = TimeOfDay(hour: TimeOfDay.now().hour + 1, minute: TimeOfDay.now().minute);
+  int numberOfPeople = 1;
+  String paymentMethod = 'credit';
+  final paymentFormKey = GlobalKey<FormState>();
+  bool acceptedTerms = false;
 
-  double get currentPricePerHour => widget.sala.precoHora;
-
-  double get totalPrice {
-    if (_startTime == null || _endTime == null) return 0;
-    final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-    final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
-    if (endMinutes <= startMinutes) return 0;
-    final duration = (endMinutes - startMinutes) / 60.0;
-    return (duration * currentPricePerHour * _people).clamp(0, double.infinity);
-  }
-
-  Future<void> _pickDate() async {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      builder: (context, child) {
-        return Theme(
-          data: theme.copyWith(
-            colorScheme: colorScheme.copyWith(
-              primary: colorScheme.primary,
-              onPrimary: colorScheme.onPrimary,
-              surface: colorScheme.surface,
-              onSurface: colorScheme.onSurface,
-            ),
-            dialogBackgroundColor: theme.dialogBackgroundColor,
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (date != null) setState(() => _selectedDate = date);
-  }
-
-  Future<void> _pickTime(bool isStart) async {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-    final sala = widget.sala;
-    TimeOfDay initialTime = const TimeOfDay(hour: 9, minute: 0);
-
-    if (sala != null) {
-      try {
-        if (isStart && sala.disponibilidadeInicio.isNotEmpty) {
-          final parts = sala.disponibilidadeInicio.split(':');
-          initialTime =
-              TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-        } else if (!isStart && sala.disponibilidadeFim.isNotEmpty) {
-          final parts = sala.disponibilidadeFim.split(':');
-          initialTime =
-              TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-        }
-      } catch (e) {}
-    }
-    initialTime = isStart
-        ? (_startTime ?? initialTime)
-        : (_endTime ??
-            TimeOfDay(hour: initialTime.hour + 1, minute: initialTime.minute));
-
-    final time = await showTimePicker(
-        context: context,
-        initialTime: initialTime,
-        builder: (context, child) {
-          return Theme(
-            data: theme.copyWith(
-              colorScheme: colorScheme.copyWith(
-                primary: colorScheme.primary,
-                onPrimary: colorScheme.onPrimary,
-                surface: colorScheme.surface,
-                onSurface: colorScheme.onSurface,
-              ),
-              timePickerTheme: theme.timePickerTheme.copyWith(
-                backgroundColor: theme.dialogBackgroundColor,
-              ),
-            ),
-            child: child!,
-          );
-        });
-
-    if (time != null) {
-      setState(() {
-        if (isStart) {
-          _startTime = time;
-          if (_endTime != null) {
-            final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-            final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
-            if (startMinutes >= endMinutes) _endTime = null;
-          }
-        } else {
-          if (_startTime != null) {
-            final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-            final endMinutes = time.hour * 60 + time.minute;
-            if (endMinutes > startMinutes) {
-              _endTime = time;
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text(
-                        'O horário de término deve ser após o horário de início.')),
-              );
-            }
-          } else {
-            _endTime = time;
-          }
-        }
-      });
-    }
+  double _calculateTotal() {
+    final startMinutes = startTime.hour * 60 + startTime.minute;
+    final endMinutes = endTime.hour * 60 + endTime.minute;
+    final durationInHours = (endMinutes - startMinutes) / 60;
+    return durationInHours > 0 ? durationInHours * widget.sala.precoHora : 0.0;
   }
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    bool podeFinalizarReserva = _selectedDate != null &&
-        _startTime != null &&
-        _endTime != null &&
-        totalPrice > 0;
-
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Reservar: ${widget.sala.nomeSala}'),
+        backgroundColor: theme.colorScheme.surface,
+        elevation: 1,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSalaHeader(theme),
-            const SizedBox(height: 24),
-            const Text(
-              'Selecione os detalhes da sua reserva',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            _buildReservationForm(context, theme),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ElevatedButton(
-          onPressed: podeFinalizarReserva
-              ? () {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          'Reserva finalizada no valor de R\$ ${totalPrice.toStringAsFixed(2)}! (Implementar próximo passo)')));
-                }
-              : null,
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 56),
-            backgroundColor: theme.colorScheme.primary,
-            disabledBackgroundColor:
-                theme.colorScheme.onSurface.withOpacity(0.12),
-            foregroundColor: theme.colorScheme.onPrimary,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          child: Text('Confirmar e Pagar R\$ ${totalPrice.toStringAsFixed(2)}'),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSalaHeader(ThemeData theme) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Row(
-        children: [
-          SizedBox(
-            width: 120,
-            height: 100,
-            child: widget.imagens.isNotEmpty
-                ? Image.network(widget.imagens.first, fit: BoxFit.cover)
-                : Container(
-                    color: theme.colorScheme.surfaceVariant,
-                    child: Icon(Icons.business)),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.sala.nomeSala, style: theme.textTheme.titleLarge),
-                  const SizedBox(height: 8),
-                  Text('R\$ ${widget.sala.precoHora.toStringAsFixed(2)} por hora',
-                      style: theme.textTheme.bodyMedium),
+      body: Stepper(
+        type: StepperType.vertical,
+        currentStep: _currentStep,
+        onStepTapped: (step) => setState(() => _currentStep = step),
+        onStepContinue: () {
+          final isLastStep = _currentStep == 3;
+          if (isLastStep) {
+            final isPaymentValid = (paymentMethod == 'credit' && (paymentFormKey.currentState?.validate() ?? false)) || paymentMethod == 'pix';
+            if (isPaymentValid && acceptedTerms) {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ConfirmationPage()));
+            } else if (!acceptedTerms) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Você deve aceitar os termos e condições.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          } else {
+            setState(() => _currentStep += 1);
+          }
+        },
+        onStepCancel: () {
+          if (_currentStep > 0) {
+            setState(() => _currentStep -= 1);
+          } else {
+            Navigator.of(context).pop();
+          }
+        },
+        controlsBuilder: (BuildContext context, ControlsDetails details) {
+          final isLastStep = _currentStep == 3;
+          return Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: details.onStepContinue,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
+                    ),
+                    child: Text(isLastStep ? 'CONFIRMAR RESERVA' : 'CONTINUAR'),
+                  ),
+                ),
+                if (_currentStep != 0) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: details.onStepCancel,
+                      style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+                      child: const Text('VOLTAR'),
+                    ),
+                  ),
                 ],
-              ),
+              ],
             ),
-          )
+          );
+        },
+        steps: [
+          Step(
+            title: const Text('Tipo de Reserva'),
+            content: BookingStep1(
+              bookingType: bookingType,
+              onChanged: (value) => setState(() => bookingType = value),
+            ),
+            isActive: _currentStep >= 0,
+            state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+          ),
+          Step(
+            title: const Text('Data e Horário'),
+            content: BookingStep2(
+              selectedDate: selectedDate,
+              startTime: startTime,
+              endTime: endTime,
+              numberOfPeople: numberOfPeople,
+              onDateChanged: (date) => setState(() => selectedDate = date),
+              onStartTimeChanged: (time) => setState(() => startTime = time),
+              onEndTimeChanged: (time) => setState(() => endTime = time),
+              onPeopleChanged: (count) => setState(() => numberOfPeople = count),
+            ),
+             isActive: _currentStep >= 1,
+            state: _currentStep > 1 ? StepState.complete : StepState.indexed,
+          ),
+          Step(
+            title: const Text('Pagamento'),
+            content: BookingStep3(
+              paymentMethod: paymentMethod,
+              formKey: paymentFormKey,
+              onChanged: (value) => setState(() => paymentMethod = value),
+            ),
+             isActive: _currentStep >= 2,
+            state: _currentStep > 2 ? StepState.complete : StepState.indexed,
+          ),
+          Step(
+            title: const Text('Revisar e Confirmar'),
+            content: BookingStep4(
+              sala: widget.sala,
+              selectedDate: selectedDate,
+              startTime: startTime,
+              endTime: endTime,
+              numberOfPeople: numberOfPeople,
+              paymentMethod: paymentMethod,
+              total: _calculateTotal(),
+              acceptedTerms: acceptedTerms,
+              onTermsChanged: (value) => setState(() => acceptedTerms = value ?? false),
+            ),
+            isActive: _currentStep >= 3,
+            state: _currentStep >= 3 ? StepState.complete : StepState.indexed,
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildReservationForm(BuildContext context, ThemeData theme) {
-    InputDecoration formFieldDecoration(String label, String hint,
-        {Widget? suffixIcon}) {
-      return InputDecoration(
-        labelText: label,
-        hintText: hint,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide:
-              BorderSide(color: theme.colorScheme.outline.withOpacity(0.7)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide:
-              BorderSide(color: theme.colorScheme.primary, width: 1.5),
-        ),
-        labelStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-        hintStyle: TextStyle(
-            color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7)),
-        suffixIcon: suffixIcon != null
-            ? IconTheme(
-                data: IconThemeData(color: theme.colorScheme.onSurfaceVariant),
-                child: suffixIcon)
-            : null,
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-          onTap: _pickDate,
-          child: AbsorbPointer(
-            child: TextFormField(
-              key: ValueKey('date-${_selectedDate?.toIso8601String()}'),
-              initialValue: _selectedDate == null
-                  ? null
-                  : '${_selectedDate!.day.toString().padLeft(2, '0')}/${_selectedDate!.month.toString().padLeft(2, '0')}/${_selectedDate!.year}',
-              style: TextStyle(color: theme.colorScheme.onSurface),
-              decoration: formFieldDecoration('Data', 'Selecione a data',
-                  suffixIcon: const Icon(Icons.calendar_today)),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _pickTime(true),
-                child: AbsorbPointer(
-                  child: TextFormField(
-                    key: ValueKey('start-${_startTime?.format(context)}'),
-                    initialValue: _startTime?.format(context),
-                    style: TextStyle(color: theme.colorScheme.onSurface),
-                    decoration: formFieldDecoration('Início', 'HH:MM'),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _pickTime(false),
-                child: AbsorbPointer(
-                  child: TextFormField(
-                    key: ValueKey('end-${_endTime?.format(context)}'),
-                    initialValue: _endTime?.format(context),
-                    style: TextStyle(color: theme.colorScheme.onSurface),
-                    decoration: formFieldDecoration('Término', 'HH:MM'),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        
-  
-        Align(
-          alignment: Alignment.center,
-          child: Text(
-              'Total da Reserva: R\$ ${totalPrice.toStringAsFixed(2)}',
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold)),
-        ),
-      ],
     );
   }
 }
