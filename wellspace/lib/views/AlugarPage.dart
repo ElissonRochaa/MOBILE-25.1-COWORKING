@@ -4,6 +4,7 @@ import 'package:Wellspace/views/widgets/sideMenu.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Wellspace/models/Sala.dart';
+import "package:Wellspace/views/ReservaEspacoPage.dart";
 
 class Alugapage extends StatelessWidget {
   final String salaId;
@@ -24,12 +25,6 @@ class CoworkingPage extends StatefulWidget {
 }
 
 class _CoworkingPageState extends State<CoworkingPage> {
-  int _selectedTab = 0;
-  DateTime? _selectedDate;
-  TimeOfDay? _startTime;
-  TimeOfDay? _endTime;
-  int _people = 1;
-
   late SalaDetailViewModel _salaDetailViewModel;
   late SalaImagemViewModel _salaImagemViewModel;
 
@@ -48,123 +43,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
     await _salaDetailViewModel.carregarSalaPorId(widget.salaId);
     if (_salaDetailViewModel.sala != null && mounted) {
       await _salaImagemViewModel.listarImagensPorSala(widget.salaId);
-    }
-  }
-
-  double get currentPricePerHour {
-    final sala = _salaDetailViewModel.sala;
-    return sala?.precoHora ?? 0.0;
-  }
-
-  double get totalPrice {
-    if (_startTime == null || _endTime == null || currentPricePerHour == 0.0) {
-      return 0;
-    }
-    final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-    final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
-    if (endMinutes <= startMinutes) return 0;
-    final duration = (endMinutes - startMinutes) / 60.0;
-    return (duration * currentPricePerHour * _people).clamp(0, double.infinity);
-  }
-
-  Future<void> _pickDate() async {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      builder: (context, child) {
-        return Theme(
-          data: theme.copyWith(
-            colorScheme: colorScheme.copyWith(
-              primary: colorScheme.primary,
-              onPrimary: colorScheme.onPrimary,
-              surface: colorScheme.surface,
-              onSurface: colorScheme.onSurface,
-            ),
-            dialogBackgroundColor: theme.dialogBackgroundColor,
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (date != null) setState(() => _selectedDate = date);
-  }
-
-  Future<void> _pickTime(bool isStart) async {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-    final sala = _salaDetailViewModel.sala;
-    TimeOfDay initialTime = const TimeOfDay(hour: 9, minute: 0);
-
-    if (sala != null) {
-      try {
-        if (isStart && sala.disponibilidadeInicio.isNotEmpty) {
-          final parts = sala.disponibilidadeInicio.split(':');
-          initialTime =
-              TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-        } else if (!isStart && sala.disponibilidadeFim.isNotEmpty) {
-          final parts = sala.disponibilidadeFim.split(':');
-          initialTime =
-              TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-        }
-      } catch (e) {}
-    }
-    initialTime = isStart
-        ? (_startTime ?? initialTime)
-        : (_endTime ??
-            TimeOfDay(hour: initialTime.hour + 1, minute: initialTime.minute));
-
-    final time = await showTimePicker(
-        context: context,
-        initialTime: initialTime,
-        builder: (context, child) {
-          return Theme(
-            data: theme.copyWith(
-              colorScheme: colorScheme.copyWith(
-                primary: colorScheme.primary,
-                onPrimary: colorScheme.onPrimary,
-                surface: colorScheme.surface,
-                onSurface: colorScheme.onSurface,
-              ),
-              timePickerTheme: theme.timePickerTheme.copyWith(
-                backgroundColor: theme.dialogBackgroundColor,
-              ),
-            ),
-            child: child!,
-          );
-        });
-
-    if (time != null) {
-      setState(() {
-        if (isStart) {
-          _startTime = time;
-          if (_endTime != null) {
-            final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-            final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
-            if (startMinutes >= endMinutes) _endTime = null;
-          }
-        } else {
-          if (_startTime != null) {
-            final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-            final endMinutes = time.hour * 60 + time.minute;
-            if (endMinutes > startMinutes) {
-              _endTime = time;
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text(
-                        'O horário de término deve ser após o horário de início.')),
-              );
-            }
-          } else {
-            _endTime = time;
-          }
-        }
-      });
     }
   }
 
@@ -332,8 +210,8 @@ class _CoworkingPageState extends State<CoworkingPage> {
                                 padding: EdgeInsets.zero,
                               ),
                               IconButton(
-                                icon: const Icon(Icons.share,
-                                    color: Colors.white),
+                                icon:
+                                    const Icon(Icons.share, color: Colors.white),
                                 onPressed: () {},
                                 visualDensity: VisualDensity.compact,
                                 padding: EdgeInsets.zero,
@@ -358,8 +236,8 @@ class _CoworkingPageState extends State<CoworkingPage> {
                       const SizedBox(width: 4),
                       Text('Tamanho: ${sala.tamanho}',
                           style: TextStyle(
-                              color: theme.colorScheme.onSurface
-                                  .withOpacity(0.7))),
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.7))),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -373,8 +251,8 @@ class _CoworkingPageState extends State<CoworkingPage> {
                           ? sala.descricao
                           : 'Nenhuma descrição disponível.',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onBackground
-                              .withOpacity(0.85))),
+                          color:
+                              theme.colorScheme.onBackground.withOpacity(0.85))),
                   const SizedBox(height: 16),
                   _buildScheduleCard(context, theme, sala),
                   const SizedBox(height: 16),
@@ -389,8 +267,8 @@ class _CoworkingPageState extends State<CoworkingPage> {
                           color: theme.colorScheme.surfaceVariant,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color:
-                                  theme.colorScheme.outline.withOpacity(0.5))),
+                              color: theme.colorScheme.outline
+                                  .withOpacity(0.5))),
                       alignment: Alignment.center,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -430,35 +308,61 @@ class _CoworkingPageState extends State<CoworkingPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Por hora',
+                        Text('A partir de',
                             style: TextStyle(
                                 color: theme.colorScheme.onSurface
                                     .withOpacity(0.7))),
                         const SizedBox(height: 4),
-                        Text('R\$ ${sala.precoHora.toStringAsFixed(2)}',
+                        Text('R\$ ${sala.precoHora.toStringAsFixed(2)} / hora',
                             style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.primary)),
-                        const SizedBox(height: 4),
-                        Text('Status: ${sala.disponibilidadeSala}',
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: sala.disponibilidadeSala.toUpperCase() ==
-                                        "DISPONIVEL"
-                                    ? (isDarkMode
-                                        ? Colors.greenAccent.shade400
-                                        : Colors.green.shade700)
-                                    : (isDarkMode
-                                        ? Colors.redAccent.shade200
-                                        : Colors.red.shade700),
-                                fontWeight: FontWeight.bold)),
                         const SizedBox(height: 16),
-                        _buildReservationForm(context, theme, sala),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed:
+                                sala.disponibilidadeSala.toUpperCase() ==
+                                        "DISPONIVEL"
+                                    ? () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                ReservaEspacoScreen(
+                                              sala: sala,
+                                              imagens: salaImagemVM
+                                                  .imagensCadastradas,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              disabledBackgroundColor:
+                                  theme.colorScheme.onSurface.withOpacity(0.12),
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              elevation: 2,
+                            ),
+                            child: Text(
+                              sala.disponibilidadeSala.toUpperCase() ==
+                                      "DISPONIVEL"
+                                  ? 'Reservar este Espaço'
+                                  : 'Indisponível no momento',
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onPrimary),
+                            ),
+                          ),
+                        )
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -543,145 +447,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
           );
         }).toList(),
       ]),
-    );
-  }
-
-  Widget _buildReservationForm(
-      BuildContext context, ThemeData theme, Sala sala) {
-    bool podeReservar =
-        sala.disponibilidadeSala.toUpperCase() == "DISPONIVEL" &&
-            _selectedDate != null &&
-            _startTime != null &&
-            _endTime != null &&
-            totalPrice > 0;
-
-    InputDecorationTheme inputDecorationTheme = theme.inputDecorationTheme;
-    InputDecoration formFieldDecoration(String label, String hint,
-        {Widget? suffixIcon}) {
-      return InputDecoration(
-        labelText: label,
-        hintText: hint,
-        border: inputDecorationTheme.border ??
-            OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        enabledBorder: inputDecorationTheme.enabledBorder ??
-            OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide:
-                  BorderSide(color: theme.colorScheme.outline.withOpacity(0.7)),
-            ),
-        focusedBorder: inputDecorationTheme.focusedBorder ??
-            OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide:
-                  BorderSide(color: theme.colorScheme.primary, width: 1.5),
-            ),
-        labelStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-        hintStyle: TextStyle(
-            color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7)),
-        suffixIcon: suffixIcon != null
-            ? IconTheme(
-                data: IconThemeData(color: theme.colorScheme.onSurfaceVariant),
-                child: suffixIcon)
-            : null,
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-          onTap: _pickDate,
-          child: AbsorbPointer(
-            child: TextFormField(
-              key: ValueKey('date-${_selectedDate?.toIso8601String()}'),
-              initialValue: _selectedDate == null
-                  ? null
-                  : '${_selectedDate!.day.toString().padLeft(2, '0')}/'
-                      '${_selectedDate!.month.toString().padLeft(2, '0')}/'
-                      '${_selectedDate!.year}',
-              style: TextStyle(color: theme.colorScheme.onSurface),
-              decoration: formFieldDecoration('Data', 'Selecione a data',
-                  suffixIcon: const Icon(Icons.calendar_today)),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _pickTime(true),
-                child: AbsorbPointer(
-                  child: TextFormField(
-                    key: ValueKey('start-${_startTime?.format(context)}'),
-                    initialValue: _startTime?.format(context),
-                    style: TextStyle(color: theme.colorScheme.onSurface),
-                    decoration: formFieldDecoration('Início', 'HH:MM'),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => _pickTime(false),
-                child: AbsorbPointer(
-                  child: TextFormField(
-                    key: ValueKey('end-${_endTime?.format(context)}'),
-                    initialValue: _endTime?.format(context),
-                    style: TextStyle(color: theme.colorScheme.onSurface),
-                    decoration: formFieldDecoration('Término', 'HH:MM'),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        TextFormField(
-          initialValue: _people.toString(),
-          keyboardType: TextInputType.number,
-          style: TextStyle(color: theme.colorScheme.onSurface),
-          decoration:
-              formFieldDecoration('Número de Pessoas', 'Quantas pessoas?'),
-          onChanged: (val) => setState(() => _people = int.tryParse(val) ?? 1),
-        ),
-        const SizedBox(height: 16),
-        Text('Total: R\$ ${totalPrice.toStringAsFixed(2)}',
-            style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onBackground)),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: podeReservar
-                ? () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(
-                              'Reserva para ${sala.nomeSala} (${sala.disponibilidadeSala}) solicitada! Total: R\$${totalPrice.toStringAsFixed(2)}')),
-                    );
-                  }
-                : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.primary,
-              disabledBackgroundColor:
-                  theme.colorScheme.onSurface.withOpacity(0.12),
-              foregroundColor: theme.colorScheme.onPrimary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 2,
-            ),
-            child: Text('Reservar Agora',
-                style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onPrimary)),
-          ),
-        )
-      ],
     );
   }
 }
