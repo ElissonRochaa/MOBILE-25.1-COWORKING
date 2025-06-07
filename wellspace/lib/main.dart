@@ -18,7 +18,7 @@ import 'package:Wellspace/views/SuportePage.dart';
 import 'package:Wellspace/views/SplashPage.dart';
 import 'package:Wellspace/views/AlugarPage.dart';
 import 'package:Wellspace/views/EsqueciSenhaPage.dart';
-import 'package:Wellspace/views/RecumperacaoSenhaPage.dart';
+import 'package:Wellspace/views/RecuperacaoSenhaPage.dart';
 
 void main() {
   usePathUrlStrategy();
