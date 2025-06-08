@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:Wellspace/viewmodels/SalaDetailViewModel.dart';
 import 'package:Wellspace/viewmodels/SalaImagemViewModel.dart';
 import 'package:Wellspace/viewmodels/SalaListViewModel.dart';
@@ -14,13 +16,15 @@ import 'package:Wellspace/views/CadastroSalaPage.dart';
 import 'package:Wellspace/views/ProfilePage.dart';
 import 'package:Wellspace/views/EditProfilePage.dart';
 import 'package:Wellspace/views/EspacoPage.dart';
-import 'package:Wellspace/views/SuportePage.dart';
+import 'package:Wellspace/views/SuportePage.dart'; 
 import 'package:Wellspace/views/SplashPage.dart';
 import 'package:Wellspace/views/AlugarPage.dart';
 import 'package:Wellspace/views/EsqueciSenhaPage.dart';
 import 'package:Wellspace/views/RecuperacaoSenhaPage.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('pt_BR', null);
   usePathUrlStrategy();
   runApp(const MyApp());
 }
@@ -30,6 +34,53 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const primaryColor = Color(0xFF007BFF);
+
+    final lightTheme = ThemeData(
+      brightness: Brightness.light,
+      primaryColor: primaryColor,
+      scaffoldBackgroundColor: Colors.white,
+      colorScheme: const ColorScheme.light(
+        primary: primaryColor,
+        secondary: primaryColor,
+        surface: Colors.white,
+        background: Colors.white,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+        )
+      ),
+       inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+      ),
+    );
+
+    final darkTheme = ThemeData(
+      brightness: Brightness.dark,
+      primaryColor: primaryColor,
+      scaffoldBackgroundColor: const Color(0xFF121212),
+      colorScheme: const ColorScheme.dark(
+        primary: primaryColor,
+        secondary: primaryColor,
+      ),
+    );
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
@@ -41,37 +92,21 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<ThemeNotifier>(
         builder: (context, themeNotifier, child) {
-          print(
-              "MyApp Consumer: Reconstruindo MaterialApp com themeMode: ${themeNotifier.themeMode}");
-
           return MaterialApp(
             title: 'Wellspace',
             debugShowCheckedModeBanner: false,
             themeMode: themeNotifier.themeMode,
-            theme: ThemeData(
-              brightness: Brightness.light,
-              primarySwatch: Colors.blue,
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.blue,
-                brightness: Brightness.light,
-              ),
-              appBarTheme: const AppBarTheme(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-              ),
-            ),
-            darkTheme: ThemeData(
-              brightness: Brightness.dark,
-              primarySwatch: Colors.blue,
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.blue,
-                brightness: Brightness.dark,
-              ),
-              appBarTheme: AppBarTheme(
-                backgroundColor: Colors.grey[850],
-                foregroundColor: Colors.white,
-              ),
-            ),
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('pt', 'BR'),
+            ],
+            locale: const Locale('pt', 'BR'),
             initialRoute: '/',
             routes: {
               '/': (context) => const SplashPage(),
@@ -110,6 +145,7 @@ class MyApp extends StatelessWidget {
 
                 if (token != null && token.isNotEmpty) {
                   return MaterialPageRoute(
+              
                     builder: (context) => ResetPasswordScreen(token: token!),
                   );
                 } else {
