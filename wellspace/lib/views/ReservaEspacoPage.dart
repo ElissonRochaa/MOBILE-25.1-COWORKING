@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:Wellspace/models/Sala.dart';
 import 'package:Wellspace/views/widgets/BookingStep1.dart';
 import 'package:Wellspace/views/widgets/BookingStep2.dart';
 import 'package:Wellspace/views/widgets/BookingStep3.dart';
 import 'package:Wellspace/views/widgets/BookingStep4.dart';
-import 'package:Wellspace/views/ConfirmationPage.dart';
+import 'package:Wellspace/views/TelaDeConfirmacao.dart';
 
 class ReservaStepperScreen extends StatefulWidget {
   final Sala sala;
@@ -17,7 +16,7 @@ class ReservaStepperScreen extends StatefulWidget {
 
 class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
   int _currentStep = 0;
-  
+
   String bookingType = 'immediate';
   DateTime selectedDate = DateTime.now();
   TimeOfDay startTime = const TimeOfDay(hour: 9, minute: 0);
@@ -39,10 +38,34 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
   }
   
   void _nextStep() {
+    
     if (_currentStep < 3) {
       setState(() => _currentStep++);
     } else {
-      _submitBooking();
+      final isPaymentValid = (paymentMethod == 'credit' && (paymentFormKey.currentState?.validate() ?? false)) || paymentMethod == 'pix';
+      if (isPaymentValid && acceptedTerms) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TelaConfirmacaoReserva(
+              sala: widget.sala,
+              selectedDate: selectedDate,
+              startTime: startTime,
+              endTime: endTime,
+              numberOfPeople: numberOfPeople,
+              total: _calculateTotal(),
+            ),
+          ),
+        );
+      } else if (!acceptedTerms) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Você deve aceitar os termos e condições para continuar.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -54,20 +77,6 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
     }
   }
 
-  void _submitBooking() {
-    final isPaymentValid = (paymentMethod == 'credit' && (paymentFormKey.currentState?.validate() ?? false)) || paymentMethod == 'pix';
-    if (isPaymentValid && acceptedTerms) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ConfirmationPage()));
-    } else if (!acceptedTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Você deve aceitar os termos e condições.'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
 
   Widget _getStepContent(int step) {
     switch (step) {
@@ -109,11 +118,6 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF4F46E5);
-    final screenWidth = MediaQuery.of(context).size.width;
-    // Um ponto de quebra mais comum para tablets/desktops pequenos
-    final isLargeScreen = screenWidth > 800;
-
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
@@ -126,48 +130,14 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
           child: Container(color: Colors.grey.shade300, height: 1.0),
         ),
       ),
-      body: Center( // Centraliza o conteúdo na tela
-        child: ConstrainedBox( // Adiciona um limite de largura máximo
-          constraints: const BoxConstraints(maxWidth: 1200),
+    
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-              child: isLargeScreen
-                  ? Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 5, // A área do formulário ocupa mais espaço
-                          child: _buildStepperContent(context),
-                        ),
-                        const SizedBox(width: 32),
-                        Expanded(
-                          flex: 3, // O resumo ocupa menos espaço
-                          child: _ResumoReservaCard(
-                            sala: widget.sala,
-                            date: selectedDate,
-                            startTime: startTime,
-                            endTime: endTime,
-                            people: numberOfPeople,
-                            total: _calculateTotal(),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Column( // Em telas pequenas, mostra um abaixo do outro
-                      children: [
-                        _buildStepperContent(context),
-                        const SizedBox(height: 32),
-                        _ResumoReservaCard(
-                          sala: widget.sala,
-                          date: selectedDate,
-                          startTime: startTime,
-                          endTime: endTime,
-                          people: numberOfPeople,
-                          total: _calculateTotal(),
-                        ),
-                      ],
-                  ),
+              child: _buildStepperContent(context),
             ),
           ),
         ),
@@ -214,34 +184,35 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
               _getStepContent(_currentStep),
               const SizedBox(height: 24),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   if (_currentStep > 0)
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.arrow_back),
-                      label: const Text('Voltar'),
-                      onPressed: _previousStep,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _previousStep,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: BorderSide(color: Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: const Text('Voltar'),
                       ),
                     ),
-                  const Spacer(),
-                  ElevatedButton(
-                    onPressed: _nextStep,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(_currentStep == 3 ? 'Confirmar Reserva' : 'Continuar'),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward, size: 16),
-                      ],
+                  if (_currentStep > 0)
+                    const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _nextStep,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                 
+                      child: Text(
+                        _currentStep == 3 ? 'Revisar Reserva' : 'Continuar',
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                 ],
@@ -253,6 +224,7 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
     );
   }
 }
+
 
 class _CustomStepperIndicator extends StatelessWidget {
   final int currentStep;
@@ -290,117 +262,3 @@ class _CustomStepperIndicator extends StatelessWidget {
   }
 }
 
-class _ResumoReservaCard extends StatelessWidget {
-  final Sala sala;
-  final DateTime date;
-  final TimeOfDay startTime;
-  final TimeOfDay endTime;
-  final int people;
-  final double total;
-
-  const _ResumoReservaCard({
-    required this.sala,
-    required this.date,
-    required this.startTime,
-    required this.endTime,
-    required this.people,
-    required this.total,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    const primaryColor = Color(0xFF4F46E5);
-    final startMinutes = startTime.hour * 60 + startTime.minute;
-    final endMinutes = endTime.hour * 60 + endTime.minute;
-    final durationInHours = (endMinutes - startMinutes) / 60;
-    
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Resumo da Reserva', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Container(
-                width: 60, height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.image, color: Colors.grey.shade400),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(sala.nomeSala, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    const Text("Av. Paulista, 1000, São Paulo", style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
-              )
-            ],
-          ),
-          const Divider(height: 32),
-          _buildSummaryRow('Data:', DateFormat('dd/MM/yyyy').format(date)),
-          _buildSummaryRow('Horário:', '${startTime.format(context)} - ${endTime.format(context)}'),
-          _buildSummaryRow('Duração:', '${durationInHours.toStringAsFixed(0)} hora(s)'),
-          _buildSummaryRow('Pessoas:', '$people'),
-          const Divider(height: 32),
-          _buildSummaryRow('Preço por hora:', 'R\$ ${sala.precoHora.toStringAsFixed(2)}'),
-          _buildSummaryRow('Duração:', '${durationInHours.toStringAsFixed(0)} hora(s)'),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Total:', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              Text('R\$ ${total.toStringAsFixed(2)}', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: primaryColor)),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _buildInfoChip(Icons.info_outline, 'Sua reserva será confirmada imediatamente após o pagamento.', Colors.blue.shade50),
-          const SizedBox(height: 12),
-          _buildInfoChip(Icons.shield_outlined, 'Pagamento seguro e criptografado', Colors.green.shade50),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: Colors.grey)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(IconData icon, String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: Colors.grey.shade700),
-          const SizedBox(width: 8),
-          Expanded(child: Text(text, style: TextStyle(fontSize: 12, color: Colors.grey.shade700))),
-        ],
-      ),
-    );
-  }
-}

@@ -67,8 +67,10 @@ class BookingStep1 extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                const Spacer(),
+                Expanded(
+                  child: Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(width: 8),
                 if (tag != null)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -78,7 +80,6 @@ class BookingStep1 extends StatelessWidget {
                     ),
                     child: Text(tag, style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Colors.black87, fontWeight: FontWeight.w500)),
                   ),
-                const SizedBox(width: 8),
                 Radio<String>(
                   value: value,
                   groupValue: bookingType,
@@ -94,7 +95,9 @@ class BookingStep1 extends StatelessWidget {
               children: [
                 Icon(icon, color: isSelected ? primaryColor : Colors.grey.shade600, size: 16),
                 const SizedBox(width: 4),
-                Text(value == 'immediate' ? 'Confirmação instantânea' : 'Resposta em até 24h', style: TextStyle(fontSize: 14, color: isSelected ? primaryColor : Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                Expanded(
+                  child: Text(value == 'immediate' ? 'Confirmação instantânea' : 'Resposta em até 24h', style: TextStyle(fontSize: 14, color: isSelected ? primaryColor : Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                ),
               ],
             ),
           ],

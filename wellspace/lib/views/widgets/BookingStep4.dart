@@ -29,7 +29,7 @@ class BookingStep4 extends StatelessWidget {
 
   String _formatDate(DateTime date) => DateFormat('dd/MM/yyyy').format(date);
   String _formatTime(BuildContext context, TimeOfDay time) => time.format(context);
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -53,7 +53,7 @@ class BookingStep4 extends StatelessWidget {
           child: Column(
             children: <Widget>[
               _buildReviewRow('Espaço:', sala.nomeSala),
-              _buildReviewRow('Tipo de Reserva:', 'Reserva Imediata'), // Exemplo
+              _buildReviewRow('Tipo de Reserva:', 'Reserva Imediata'),
               _buildReviewRow('Data:', _formatDate(selectedDate)),
               _buildReviewRow('Horário:', '${_formatTime(context, startTime)} - ${_formatTime(context, endTime)}'),
               _buildReviewRow('Duração:', '${durationInHours.toStringAsFixed(0)} hora(s)'),
@@ -77,8 +77,8 @@ class BookingStep4 extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(8)
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(8)
           ),
           child: Row(
             children: [
@@ -141,14 +141,13 @@ class BookingStep4 extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: const TextStyle(color: Colors.grey)),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
-              value, 
+              value,
               style: const TextStyle(fontWeight: FontWeight.w600),
               textAlign: TextAlign.right,
             ),
