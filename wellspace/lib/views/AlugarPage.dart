@@ -35,16 +35,13 @@ class _CoworkingPageState extends State<CoworkingPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final salaDetailViewModel =
-          Provider.of<SalaDetailViewModel>(context, listen: false);
-      final salaImagemViewModel =
-          Provider.of<SalaImagemViewModel>(context, listen: false);
+      final salaDetailViewModel = Provider.of<SalaDetailViewModel>(context, listen: false);
+      final salaImagemViewModel = Provider.of<SalaImagemViewModel>(context, listen: false);
       _fetchSalaData(salaDetailViewModel, salaImagemViewModel);
     });
   }
 
-  Future<void> _fetchSalaData(SalaDetailViewModel salaDetailVM,
-      SalaImagemViewModel salaImagemVM) async {
+  Future<void> _fetchSalaData(SalaDetailViewModel salaDetailVM, SalaImagemViewModel salaImagemVM) async {
     await salaDetailVM.carregarSalaPorId(widget.salaId);
     if (salaDetailVM.sala != null && mounted) {
       await salaImagemVM.listarImagensPorSala(widget.salaId);
@@ -53,21 +50,30 @@ class _CoworkingPageState extends State<CoworkingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Consumer2<SalaDetailViewModel, SalaImagemViewModel>(
-        builder: (context, salaDetailVM, salaImagemVM, child) {
-          if (salaDetailVM.isLoading) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFF007BFF)));
-          }
-          if (salaDetailVM.sala == null) {
-            return const Center(child: Text('Não foi possível carregar os dados da sala.', style: TextStyle(color: Colors.black87)));
-          }
-          final sala = salaDetailVM.sala!;
-          final imagens = salaImagemVM.imagensCadastradas;
+    const primaryColor = Color(0xFF1976D2);
+    const backgroundColor = Color(0xFFF9FAFB);
 
-          return _PageContent(sala: sala, imagens: imagens);
-        },
+    return Theme(
+      data: ThemeData(
+        primaryColor: primaryColor,
+        colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
+        scaffoldBackgroundColor: backgroundColor,
+      ),
+      child: Scaffold(
+        body: Consumer2<SalaDetailViewModel, SalaImagemViewModel>(
+          builder: (context, salaDetailVM, salaImagemVM, child) {
+            if (salaDetailVM.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (salaDetailVM.sala == null) {
+              return const Center(child: Text('Não foi possível carregar os dados da sala.'));
+            }
+            final sala = salaDetailVM.sala!;
+            final imagens = salaImagemVM.imagensCadastradas;
+
+            return _PageContent(sala: sala, imagens: imagens);
+          },
+        ),
       ),
     );
   }
@@ -81,150 +87,142 @@ class _PageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            expandedHeight: 240.0,
-            floating: false,
-            pinned: true,
-            stretch: true,
-            backgroundColor: const Color(0xFF007BFF),
-            foregroundColor: Colors.white,
-            elevation: 0,
-            flexibleSpace: FlexibleSpaceBar(
-              background: _ImageGallery(imagens: imagens),
-              stretchModes: const [
-                StretchMode.zoomBackground,
-                StretchMode.blurBackground,
-                StretchMode.fadeTitle,
-              ],
+          _CustomSliverAppBar(imagens: imagens),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _HeaderInfo(sala: sala),
+                _InfoCard(
+                  title: 'Sobre este espaço',
+                  icon: Icons.info_outline,
+                  child: Text(sala.descricao, style: const TextStyle(fontSize: 16, height: 1.5, color: Color(0xFF4B5563))),
+                ),
+                _InfoCard(
+                  title: 'Comodidades',
+                  icon: Icons.widgets_outlined,
+                  child: _AmenitiesGrid(),
+                ),
+                 _InfoCard(
+                  title: 'Horário de Funcionamento',
+                  icon: Icons.access_time_rounded,
+                  child: _HoursInfo(sala: sala),
+                ),
+                _InfoCard(
+                  title: 'Localização',
+                  icon: Icons.location_on_outlined,
+                  child: _LocationMap(),
+                ),
+                const SizedBox(height: 120),
+              ]),
             ),
-            actions: [
-              IconButton(icon: const Icon(Icons.favorite_border), onPressed: () {}),
-              IconButton(icon: const Icon(Icons.share_outlined), onPressed: () {}),
-            ],
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  _HeaderInfo(sala: sala),
-                  const SizedBox(height: 20),
-                  const Divider(height: 1, color: Colors.grey),
-                  const SizedBox(height: 20),
-                  _Section(title: 'Sobre este espaço', child: Text(sala.descricao, style: const TextStyle(fontSize: 16, height: 1.6, color: Colors.black87))),
-                  const SizedBox(height: 20),
-                  const Divider(height: 1, color: Colors.grey),
-                  const SizedBox(height: 20),
-                  _Section(title: 'Comodidades', child: _AmenitiesGrid()),
-                  const SizedBox(height: 20),
-                  const Divider(height: 1, color: Colors.grey),
-                  const SizedBox(height: 20),
-                  _Section(title: 'Preços', child: _PricingInfo(precoHora: sala.precoHora)),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: sala.disponibilidadeSala.toUpperCase() == "DISPONIVEL"
-                        ? () => Navigator.push(context, MaterialPageRoute(builder: (context) => ReservaStepperScreen(sala: sala)))
-                        : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF007BFF),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                        disabledBackgroundColor: Colors.grey.shade300,
-                      ),
-                      child: const Text('Reservar Agora'),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  const Divider(height: 1, color: Colors.grey),
-                  const SizedBox(height: 20),
-                  _Section(title: 'Horários de Funcionamento', child: _HoursInfo(sala: sala)),
-                  const SizedBox(height: 20),
-                  const Divider(height: 1, color: Colors.grey),
-                  const SizedBox(height: 20),
-                  _Section(title: 'Localização', child: _LocationMap()),
-                  const SizedBox(height: 32),
-                ],
-              ),
-            ),
-          )
         ],
+      ),
+      bottomNavigationBar: _StickyBookingBar(sala: sala),
+    );
+  }
+}
+
+class _CustomSliverAppBar extends StatelessWidget {
+  final List<String> imagens;
+  const _CustomSliverAppBar({required this.imagens});
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: 300.0,
+      floating: false,
+      pinned: true,
+      stretch: true,
+      backgroundColor: Theme.of(context).primaryColor,
+      foregroundColor: Colors.white,
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.1),
+      flexibleSpace: FlexibleSpaceBar(
+        background: _ImageGallery(imagens: imagens),
+        stretchModes: const [StretchMode.zoomBackground],
       ),
     );
   }
 }
 
-class _Section extends StatelessWidget {
-  final String title;
-  final Widget child;
-
-  const _Section({required this.title, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.black87)),
-        const SizedBox(height: 12),
-        child,
-      ],
-    );
-  }
-}
-
-class _ImageGallery extends StatefulWidget {
+class _ImageGallery extends StatelessWidget {
   final List<String> imagens;
   const _ImageGallery({required this.imagens});
 
   @override
-  __ImageGalleryState createState() => __ImageGalleryState();
-}
-
-class __ImageGalleryState extends State<_ImageGallery> {
-  final PageController _pageController = PageController();
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (widget.imagens.isEmpty) {
-      return Container(color: Colors.grey.shade200, child: const Center(child: Text('Nenhuma imagem')));
+    final pageController = PageController();
+
+    if (imagens.isEmpty) {
+      return Container(color: Colors.grey.shade200, child: const Center(child: Icon(Icons.business_rounded, size: 80, color: Colors.white)));
     }
 
     return Stack(
-      alignment: Alignment.bottomCenter,
+      fit: StackFit.expand,
       children: [
         PageView.builder(
-          controller: _pageController,
-          itemCount: widget.imagens.length,
+          controller: pageController,
+          itemCount: imagens.length,
           itemBuilder: (context, index) {
-            return Image.network(widget.imagens.elementAt(index), fit: BoxFit.cover, width: double.infinity);
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    opaque: false,
+                    barrierColor: Colors.black,
+                    pageBuilder: (context, animation, secondaryAnimation) {
+                      return FullScreenImageViewer(
+                        imageUrls: imagens,
+                        initialIndex: index,
+                      );
+                    },
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
+                  ),
+                );
+              },
+              child: Image.network(
+                imagens.elementAt(index),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, color: Colors.white)),
+              ),
+            );
           },
         ),
-        if (widget.imagens.length > 1)
+        IgnorePointer(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.black.withOpacity(0.5), Colors.transparent],
+                stops: const [0.0, 0.4],
+              ),
+            ),
+          ),
+        ),
+        if (imagens.length > 1)
           Positioned(
-            bottom: 12.0,
-            child: SmoothPageIndicator(
-              controller: _pageController,
-              count: widget.imagens.length,
-              effect: WormEffect(
-                dotColor: Colors.white.withOpacity(0.7),
-                activeDotColor: const Color(0xFF007BFF),
-                dotHeight: 9,
-                dotWidth: 9,
+            bottom: 16.0,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: SmoothPageIndicator(
+                controller: pageController,
+                count: imagens.length,
+                effect: ScrollingDotsEffect(
+                  dotColor: Colors.white70,
+                  activeDotColor: Theme.of(context).primaryColor,
+                  dotHeight: 8,
+                  dotWidth: 8,
+                ),
               ),
             ),
           ),
@@ -242,25 +240,37 @@ class _HeaderInfo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(sala.nomeSala, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.black87)),
-        const SizedBox(height: 8),
-        Row(
-          children: <Widget>[
-            Icon(Icons.location_on_outlined, color: Colors.grey.shade600, size: 16),
-            const SizedBox(width: 6),
-            Expanded(child: Text("Av. Exemplo, 123 - Cidade", style: TextStyle(fontSize: 14, color: Colors.grey.shade600))),
-          ],
+        Text(
+          sala.nomeSala,
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF111827),
+            height: 1.2,
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            const Icon(Icons.star, color: Colors.amber, size: 18),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade100,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                  SizedBox(width: 4),
+                  Text('4.8 (124)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Icon(Icons.location_on_outlined, color: Theme.of(context).primaryColor, size: 16),
             const SizedBox(width: 4),
-            const Text('4.8', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87)),
-            const SizedBox(width: 4),
-            Text('(124 avaliações)', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
-            const Spacer(),
-            Text("Tamanho: ${sala.tamanho}", style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
+            Expanded(child: Text("Av. Exemplo, 123", style: TextStyle(fontSize: 14, color: Theme.of(context).primaryColor, fontWeight: FontWeight.w600))),
           ],
         ),
       ],
@@ -268,15 +278,56 @@ class _HeaderInfo extends StatelessWidget {
   }
 }
 
+class _InfoCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Widget child;
+
+  const _InfoCard({required this.title, required this.icon, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: Theme.of(context).primaryColor),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
 class _AmenitiesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> comodidades = [
-      {'icon': Icons.wifi, 'label': 'Wi-Fi de Alta Velocidade'},
-      {'icon': Icons.local_cafe, 'label': 'Café Gratuito'},
-      {'icon': Icons.ac_unit, 'label': 'Ar Condicionado'},
-      {'icon': Icons.print_outlined, 'label': 'Impressora'},
-      {'icon': Icons.meeting_room_outlined, 'label': 'Salas de Reunião'},
+    final comodidades = [
+      {'icon': Icons.wifi, 'label': 'Wi-Fi Fibra'},
+      {'icon': Icons.local_cafe_rounded, 'label': 'Café e Água'},
+      {'icon': Icons.ac_unit_rounded, 'label': 'Ar Condicionado'},
+      {'icon': Icons.print_rounded, 'label': 'Impressora'},
     ];
     return GridView.builder(
       shrinkWrap: true,
@@ -284,16 +335,16 @@ class _AmenitiesGrid extends StatelessWidget {
       itemCount: comodidades.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 3.5,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
+        childAspectRatio: 4,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 12,
       ),
       itemBuilder: (context, index) {
         return Row(
           children: [
-            Icon(comodidades.elementAt(index)['icon'], color: const Color(0xFF007BFF), size: 20),
-            const SizedBox(width: 8),
-            Expanded(child: Text(comodidades.elementAt(index)['label'], style: const TextStyle(fontSize: 15, color: Colors.black87))),
+            Icon(comodidades[index]['icon'] as IconData, color: Theme.of(context).primaryColor, size: 22),
+            const SizedBox(width: 12),
+            Expanded(child: Text(comodidades[index]['label'] as String, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Color(0xFF374151)))),
           ],
         );
       },
@@ -301,92 +352,33 @@ class _AmenitiesGrid extends StatelessWidget {
   }
 }
 
-class _PricingInfo extends StatelessWidget {
-  final double precoHora;
-  const _PricingInfo({required this.precoHora});
-
-  @override
-  Widget build(BuildContext context) {
-    final double precoDia = precoHora * 8;
-    final double precoSemana = precoDia * 5;
-
-    final Map<String, dynamic> precos = {
-      'Hora': precoHora,
-      'Dia': precoDia,
-      'Semana': precoSemana,
-    };
-    return Column(
-      children: precos.entries.map((entry) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: Row(
-            children: [
-              Text('Passe de ${entry.key}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87)),
-              const Spacer(),
-              Text('R\$ ${entry.value.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
 class _HoursInfo extends StatelessWidget {
   final Sala sala;
   const _HoursInfo({required this.sala});
-
-  String _formatarDias(String dias) {
-    switch (dias.toUpperCase()) {
-      case 'SEGUNDA_A_SEXTA':
-        return 'Segunda a Sexta';
-      case 'TODOS_OS_DIAS':
-        return 'Todos os dias';
-      case 'FINS_DE_SEMANA':
-        return 'Fins de Semana';
-      default:
-        return dias.replaceAll('_', ' ').split(RegExp(r'[,;]')).join(', ');
-    }
-  }
-
+  
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue.shade200),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Icon(Icons.access_time_filled, color: const Color(0xFF007BFF), size: 24),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _formatarDias(sala.disponibilidadeDiaSemana),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${sala.disponibilidadeInicio} às ${sala.disponibilidadeFim}',
-                  style: const TextStyle(fontSize: 15, color: Colors.black87)
-                ),
-              ],
-            ),
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Dias de semana', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text(sala.disponibilidadeDiaSemana.replaceAll('_', ' '), style: const TextStyle(color: Color(0xFF6B7280))),
+            ],
           ),
-        ],
-      ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Horário', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text('${sala.disponibilidadeInicio} - ${sala.disponibilidadeFim}', style: const TextStyle(color: Color(0xFF6B7280))),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -397,20 +389,191 @@ class _LocationMap extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          height: 180,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Icon(Icons.map_outlined, size: 50, color: Colors.grey.shade600),
+        AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Icon(Icons.map_outlined, size: 50, color: Colors.grey.shade600),
+            ),
           ),
         ),
         const SizedBox(height: 12),
-        const Text("Av. Exemplo, 123 - Próximo ao Metrô - Cidade", style: TextStyle(fontSize: 15, color: Colors.black87)),
+        const Text("Av. Exemplo, 123 - Próximo ao Metrô", style: TextStyle(fontSize: 16, color: Color(0xFF4B5563))),
       ],
+    );
+  }
+}
+
+class _StickyBookingBar extends StatelessWidget {
+  final Sala sala;
+  const _StickyBookingBar({required this.sala});
+  
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12).copyWith(
+        bottom: MediaQuery.of(context).padding.bottom + 12,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: const Offset(0, -5),
+          ),
+        ],
+        border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
+      ),
+      child: Row(
+        children: [
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'R\$ ${sala.precoHora.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+              ),
+              const Text('/ hora', style: TextStyle(color: Color(0xFF6B7280))),
+            ],
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: sala.disponibilidadeSala.toUpperCase() == "DISPONIVEL"
+                  ? () => Navigator.push(context, MaterialPageRoute(builder: (context) => ReservaStepperScreen(sala: sala)))
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              child: const Text('Reservar Agora'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class FullScreenImageViewer extends StatefulWidget {
+  final List<String> imageUrls;
+  final int initialIndex;
+
+  const FullScreenImageViewer({
+    super.key,
+    required this.imageUrls,
+    required this.initialIndex,
+  });
+
+  @override
+  State<FullScreenImageViewer> createState() => _FullScreenImageViewerState();
+}
+
+class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
+  late final PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            itemCount: widget.imageUrls.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              // TESTE: Removendo o InteractiveViewer para isolar o problema
+              return Center(
+                child: Image.network(
+                  widget.imageUrls[index],
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                            : null,
+                        color: Colors.white,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.broken_image, color: Colors.white, size: 64),
+                          SizedBox(height: 16),
+                          Text('Erro ao carregar imagem', style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          if (widget.imageUrls.length > 1)
+            Positioned(
+              bottom: 20.0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${_currentIndex + 1} / ${widget.imageUrls.length}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
