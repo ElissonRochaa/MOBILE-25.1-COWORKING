@@ -6,6 +6,7 @@ import 'package:Wellspace/viewmodels/SalaDetailViewModel.dart';
 import 'package:Wellspace/viewmodels/SalaImagemViewModel.dart';
 import 'package:Wellspace/views/ReservaEspacoPage.dart';
 
+// Este widget wrapper está correto, ele fornece os ViewModels para a página abaixo.
 class Alugapage extends StatelessWidget {
   final String salaId;
   const Alugapage({super.key, required this.salaId});
@@ -34,14 +35,18 @@ class _CoworkingPageState extends State<CoworkingPage> {
   @override
   void initState() {
     super.initState();
+    // A forma como os dados são carregados está correta.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final salaDetailViewModel = Provider.of<SalaDetailViewModel>(context, listen: false);
-      final salaImagemViewModel = Provider.of<SalaImagemViewModel>(context, listen: false);
+      final salaDetailViewModel =
+          Provider.of<SalaDetailViewModel>(context, listen: false);
+      final salaImagemViewModel =
+          Provider.of<SalaImagemViewModel>(context, listen: false);
       _fetchSalaData(salaDetailViewModel, salaImagemViewModel);
     });
   }
 
-  Future<void> _fetchSalaData(SalaDetailViewModel salaDetailVM, SalaImagemViewModel salaImagemVM) async {
+  Future<void> _fetchSalaData(SalaDetailViewModel salaDetailVM,
+      SalaImagemViewModel salaImagemVM) async {
     await salaDetailVM.carregarSalaPorId(widget.salaId);
     if (salaDetailVM.sala != null && mounted) {
       await salaImagemVM.listarImagensPorSala(widget.salaId);
@@ -50,35 +55,36 @@ class _CoworkingPageState extends State<CoworkingPage> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF1976D2);
-    const backgroundColor = Color(0xFFF9FAFB);
+    // REMOVIDO: O widget Theme local que impedia o tema global de funcionar.
+    // Agora, a página usará o tema claro/escuro definido no MaterialApp.
+    return Scaffold(
+      // A cor de fundo do Scaffold principal agora virá do tema global.
+      body: Consumer2<SalaDetailViewModel, SalaImagemViewModel>(
+        builder: (context, salaDetailVM, salaImagemVM, child) {
+          final theme = Theme.of(
+              context); // Obtém o tema para passar para os widgets filhos.
 
-    return Theme(
-      data: ThemeData(
-        primaryColor: primaryColor,
-        colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
-        scaffoldBackgroundColor: backgroundColor,
-      ),
-      child: Scaffold(
-        body: Consumer2<SalaDetailViewModel, SalaImagemViewModel>(
-          builder: (context, salaDetailVM, salaImagemVM, child) {
-            if (salaDetailVM.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (salaDetailVM.sala == null) {
-              return const Center(child: Text('Não foi possível carregar os dados da sala.'));
-            }
-            final sala = salaDetailVM.sala!;
-            final imagens = salaImagemVM.imagensCadastradas;
+          if (salaDetailVM.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (salaDetailVM.sala == null) {
+            return Center(
+              child: Text('Não foi possível carregar os dados da sala.',
+                  style: TextStyle(color: theme.colorScheme.error)),
+            );
+          }
+          final sala = salaDetailVM.sala!;
+          final imagens = salaImagemVM.imagensCadastradas;
 
-            return _PageContent(sala: sala, imagens: imagens);
-          },
-        ),
+          // O conteúdo da página agora está em um widget separado para melhor organização.
+          return _PageContent(sala: sala, imagens: imagens);
+        },
       ),
     );
   }
 }
 
+// O conteúdo principal da página, que usa o tema herdado.
 class _PageContent extends StatelessWidget {
   final Sala sala;
   final List<String> imagens;
@@ -87,7 +93,12 @@ class _PageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context); // Obtém o tema para usar nos widgets.
+
     return Scaffold(
+      // A cor de fundo aqui também usa o tema.
+      // `colorScheme.surfaceVariant` é uma boa opção para fundos de conteúdo.
+      backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.3),
       body: CustomScrollView(
         slivers: [
           _CustomSliverAppBar(imagens: imagens),
@@ -99,14 +110,22 @@ class _PageContent extends StatelessWidget {
                 _InfoCard(
                   title: 'Sobre este espaço',
                   icon: Icons.info_outline,
-                  child: Text(sala.descricao, style: const TextStyle(fontSize: 16, height: 1.5, color: Color(0xFF4B5563))),
+                  child: Text(
+                    sala.descricao.isNotEmpty
+                        ? sala.descricao
+                        : "Nenhuma descrição disponível.",
+                    // Cor de texto adaptável.
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                        height: 1.5,
+                        color: theme.colorScheme.onSurface.withOpacity(0.85)),
+                  ),
                 ),
                 _InfoCard(
                   title: 'Comodidades',
                   icon: Icons.widgets_outlined,
                   child: _AmenitiesGrid(),
                 ),
-                 _InfoCard(
+                _InfoCard(
                   title: 'Horário de Funcionamento',
                   icon: Icons.access_time_rounded,
                   child: _HoursInfo(sala: sala),
@@ -116,32 +135,38 @@ class _PageContent extends StatelessWidget {
                   icon: Icons.location_on_outlined,
                   child: _LocationMap(),
                 ),
+                // Espaço extra no final para que a barra de reserva não cubra o último card.
                 const SizedBox(height: 120),
               ]),
             ),
           ),
         ],
       ),
+      // A barra de reserva na parte inferior da tela.
       bottomNavigationBar: _StickyBookingBar(sala: sala),
     );
   }
 }
 
+// A AppBar customizada que se expande e colapsa.
 class _CustomSliverAppBar extends StatelessWidget {
   final List<String> imagens;
   const _CustomSliverAppBar({required this.imagens});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return SliverAppBar(
       expandedHeight: 300.0,
       floating: false,
       pinned: true,
       stretch: true,
-      backgroundColor: Theme.of(context).primaryColor,
-      foregroundColor: Colors.white,
+      // As cores agora vêm do appBarTheme global, garantindo consistência.
+      backgroundColor: theme.appBarTheme.backgroundColor,
+      foregroundColor: theme.appBarTheme.foregroundColor,
       elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: theme.shadowColor.withOpacity(0.1),
       flexibleSpace: FlexibleSpaceBar(
         background: _ImageGallery(imagens: imagens),
         stretchModes: const [StretchMode.zoomBackground],
@@ -150,6 +175,7 @@ class _CustomSliverAppBar extends StatelessWidget {
   }
 }
 
+// A galeria de imagens dentro da AppBar.
 class _ImageGallery extends StatelessWidget {
   final List<String> imagens;
   const _ImageGallery({required this.imagens});
@@ -157,9 +183,16 @@ class _ImageGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pageController = PageController();
+    final theme = Theme.of(context);
 
     if (imagens.isEmpty) {
-      return Container(color: Colors.grey.shade200, child: const Center(child: Icon(Icons.business_rounded, size: 80, color: Colors.white)));
+      // Placeholder adaptável para quando não há imagens.
+      return Container(
+          color: theme.colorScheme.surfaceVariant,
+          child: Center(
+              child: Icon(Icons.business_rounded,
+                  size: 80,
+                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5))));
     }
 
     return Stack(
@@ -171,18 +204,21 @@ class _ImageGallery extends StatelessWidget {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () {
+                // Navegação para a tela cheia.
                 Navigator.push(
                   context,
                   PageRouteBuilder(
                     opaque: false,
-                    barrierColor: Colors.black,
+                    barrierColor: Colors
+                        .black, // Fundo preto é ideal para visualização de imagem.
                     pageBuilder: (context, animation, secondaryAnimation) {
                       return FullScreenImageViewer(
                         imageUrls: imagens,
                         initialIndex: index,
                       );
                     },
-                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
                       return FadeTransition(opacity: animation, child: child);
                     },
                   ),
@@ -191,23 +227,26 @@ class _ImageGallery extends StatelessWidget {
               child: Image.network(
                 imagens.elementAt(index),
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, color: Colors.white)),
+                errorBuilder: (context, error, stackTrace) => Center(
+                    child: Icon(Icons.broken_image, color: Colors.white70)),
               ),
             );
           },
         ),
+        // Gradiente para garantir que os ícones da AppBar fiquem legíveis.
         IgnorePointer(
           child: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.black.withOpacity(0.5), Colors.transparent],
+                colors: [Colors.black.withOpacity(0.6), Colors.transparent],
                 stops: const [0.0, 0.4],
               ),
             ),
           ),
         ),
+        // Indicador de página (pontos)
         if (imagens.length > 1)
           Positioned(
             bottom: 16.0,
@@ -218,8 +257,10 @@ class _ImageGallery extends StatelessWidget {
                 controller: pageController,
                 count: imagens.length,
                 effect: ScrollingDotsEffect(
-                  dotColor: Colors.white70,
-                  activeDotColor: Theme.of(context).primaryColor,
+                  // Cores do indicador adaptáveis.
+                  dotColor: Colors.white.withOpacity(0.6),
+                  activeDotColor:
+                      theme.colorScheme.primary, // Usa a cor primária do tema.
                   dotHeight: 8,
                   dotWidth: 8,
                 ),
@@ -231,21 +272,25 @@ class _ImageGallery extends StatelessWidget {
   }
 }
 
+// Informações de cabeçalho (nome da sala, avaliação, etc.).
 class _HeaderInfo extends StatelessWidget {
   final Sala sala;
   const _HeaderInfo({required this.sala});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           sala.nomeSala,
-          style: const TextStyle(
-            fontSize: 28,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            // Estilo do tema
             fontWeight: FontWeight.bold,
-            color: Color(0xFF111827),
+            color: theme.colorScheme.onSurface, // Cor adaptável
             height: 1.2,
           ),
         ),
@@ -254,23 +299,41 @@ class _HeaderInfo extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              // Badge de avaliação
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: Colors.amber.shade100,
+                // Cor de fundo adaptável para o badge.
+                color: isDarkMode
+                    ? Colors.amber.withOpacity(0.2)
+                    : Colors.amber.shade100,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.star_rounded, color: Colors.amber, size: 16),
-                  SizedBox(width: 4),
-                  Text('4.8 (124)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  Icon(Icons.star_rounded,
+                      color: Colors.amber.shade600, size: 16),
+                  const SizedBox(width: 4),
+                  Text('4.8 (124)',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          // Cor de texto adaptável para o badge.
+                          color: isDarkMode
+                              ? Colors.amber.shade200
+                              : Colors.amber.shade900)),
                 ],
               ),
             ),
             const SizedBox(width: 12),
-            Icon(Icons.location_on_outlined, color: Theme.of(context).primaryColor, size: 16),
+            Icon(Icons.location_on_outlined,
+                color: theme.colorScheme.primary, size: 16),
             const SizedBox(width: 4),
-            Expanded(child: Text("Av. Exemplo, 123", style: TextStyle(fontSize: 14, color: Theme.of(context).primaryColor, fontWeight: FontWeight.w600))),
+            Expanded(
+                child: Text("Av. Exemplo, 123",
+                    style: TextStyle(
+                        fontSize: 14,
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600))),
           ],
         ),
       ],
@@ -278,51 +341,63 @@ class _HeaderInfo extends StatelessWidget {
   }
 }
 
+// Um card genérico para exibir informações.
 class _InfoCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final Widget child;
 
-  const _InfoCard({required this.title, required this.icon, required this.child});
+  const _InfoCard(
+      {required this.title, required this.icon, required this.child});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       margin: const EdgeInsets.only(top: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor, // Cor de fundo do card adaptável.
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(
+            color:
+                theme.colorScheme.outline.withOpacity(0.2)), // Borda adaptável.
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: Theme.of(context).primaryColor),
+              Icon(icon, color: theme.colorScheme.primary),
               const SizedBox(width: 12),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 20,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  // Estilo do tema
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
+                  color: theme.colorScheme.onSurface, // Cor adaptável
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          child,
+          // O `child` (conteúdo do card) deve ter seus próprios estilos adaptáveis.
+          DefaultTextStyle(
+              style: theme.textTheme.bodyMedium!
+                  .copyWith(color: theme.colorScheme.onSurface),
+              child: child),
         ],
       ),
     );
   }
 }
 
+// Grid de comodidades.
 class _AmenitiesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final comodidades = [
       {'icon': Icons.wifi, 'label': 'Wi-Fi Fibra'},
       {'icon': Icons.local_cafe_rounded, 'label': 'Café e Água'},
@@ -342,9 +417,17 @@ class _AmenitiesGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         return Row(
           children: [
-            Icon(comodidades[index]['icon'] as IconData, color: Theme.of(context).primaryColor, size: 22),
+            Icon(comodidades[index]['icon'] as IconData,
+                color: theme.colorScheme.primary, size: 22),
             const SizedBox(width: 12),
-            Expanded(child: Text(comodidades[index]['label'] as String, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Color(0xFF374151)))),
+            Expanded(
+                child: Text(
+              comodidades[index]['label'] as String,
+              // Cor do texto adaptável.
+              style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface),
+            )),
           ],
         );
       },
@@ -352,20 +435,28 @@ class _AmenitiesGrid extends StatelessWidget {
   }
 }
 
+// Informações de horário.
 class _HoursInfo extends StatelessWidget {
   final Sala sala;
   const _HoursInfo({required this.sala});
-  
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Row(
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Dias de semana', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              Text(sala.disponibilidadeDiaSemana.replaceAll('_', ' '), style: const TextStyle(color: Color(0xFF6B7280))),
+              Text('Dias de semana',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface)),
+              const SizedBox(height: 4),
+              Text(sala.disponibilidadeDiaSemana.replaceAll('_', ' '),
+                  style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.7))),
             ],
           ),
         ),
@@ -373,8 +464,14 @@ class _HoursInfo extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Horário', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              Text('${sala.disponibilidadeInicio} - ${sala.disponibilidadeFim}', style: const TextStyle(color: Color(0xFF6B7280))),
+              Text('Horário',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface)),
+              const SizedBox(height: 4),
+              Text('${sala.disponibilidadeInicio} - ${sala.disponibilidadeFim}',
+                  style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.7))),
             ],
           ),
         ),
@@ -383,9 +480,11 @@ class _HoursInfo extends StatelessWidget {
   }
 }
 
+// Placeholder do mapa de localização.
 class _LocationMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -394,41 +493,55 @@ class _LocationMap extends StatelessWidget {
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              // Cor de fundo do mapa adaptável.
+              color: theme.colorScheme.surfaceVariant,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
-              child: Icon(Icons.map_outlined, size: 50, color: Colors.grey.shade600),
+              // Ícone do mapa adaptável.
+              child: Icon(Icons.map_outlined,
+                  size: 50, color: theme.colorScheme.onSurfaceVariant),
             ),
           ),
         ),
         const SizedBox(height: 12),
-        const Text("Av. Exemplo, 123 - Próximo ao Metrô", style: TextStyle(fontSize: 16, color: Color(0xFF4B5563))),
+        Text("Av. Exemplo, 123 - Próximo ao Metrô",
+            // Cor do texto de endereço adaptável.
+            style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.8))),
       ],
     );
   }
 }
 
+// A barra inferior fixa para reserva.
 class _StickyBookingBar extends StatelessWidget {
   final Sala sala;
   const _StickyBookingBar({required this.sala});
-  
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12).copyWith(
+      padding:
+          const EdgeInsets.symmetric(horizontal: 20, vertical: 12).copyWith(
         bottom: MediaQuery.of(context).padding.bottom + 12,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        // Cor de fundo da barra adaptável.
+        color: theme.cardColor,
+        // Sombra adaptável.
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: theme.shadowColor.withOpacity(0.08),
             blurRadius: 15,
             offset: const Offset(0, -5),
           ),
         ],
-        border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
+        // Borda superior adaptável.
+        border: Border(
+            top: BorderSide(
+                color: theme.colorScheme.outline.withOpacity(0.2), width: 1)),
       ),
       child: Row(
         children: [
@@ -438,23 +551,37 @@ class _StickyBookingBar extends StatelessWidget {
             children: [
               Text(
                 'R\$ ${sala.precoHora.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                // Estilo do preço adaptável.
+                style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface),
               ),
-              const Text('/ hora', style: TextStyle(color: Color(0xFF6B7280))),
+              Text('/ hora',
+                  style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.7))),
             ],
           ),
           const SizedBox(width: 16),
           Expanded(
             child: ElevatedButton(
               onPressed: sala.disponibilidadeSala.toUpperCase() == "DISPONIVEL"
-                  ? () => Navigator.push(context, MaterialPageRoute(builder: (context) => ReservaStepperScreen(sala: sala)))
+                  ? () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              ReservaStepperScreen(sala: sala)))
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
+                // Estilo do botão adaptável.
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+                disabledBackgroundColor:
+                    theme.colorScheme.onSurface.withOpacity(0.12),
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                textStyle:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               child: const Text('Reservar Agora'),
             ),
@@ -465,6 +592,9 @@ class _StickyBookingBar extends StatelessWidget {
   }
 }
 
+// A tela cheia para visualização de imagens.
+// Esta tela intencionalmente usa um fundo preto para uma experiência de visualização imersiva,
+// o que é uma prática comum de UX e não precisa necessariamente se adaptar ao tema claro/escuro da UI principal.
 class FullScreenImageViewer extends StatefulWidget {
   final List<String> imageUrls;
   final int initialIndex;
@@ -499,10 +629,10 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.black, // Mantido preto para imersão.
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
+        foregroundColor: Colors.white, // Ícones brancos sobre fundo preto.
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -521,34 +651,42 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
               });
             },
             itemBuilder: (context, index) {
-              // TESTE: Removendo o InteractiveViewer para isolar o problema
-              return Center(
-                child: Image.network(
-                  widget.imageUrls[index],
-                  fit: BoxFit.contain,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                            : null,
-                        color: Colors.white,
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.broken_image, color: Colors.white, size: 64),
-                          SizedBox(height: 16),
-                          Text('Erro ao carregar imagem', style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-                    );
-                  },
+              // InteractiveViewer permite que o usuário dê zoom na imagem.
+              return InteractiveViewer(
+                panEnabled: true,
+                minScale: 1.0,
+                maxScale: 4.0,
+                child: Center(
+                  child: Image.network(
+                    widget.imageUrls[index],
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image,
+                                color: Colors.white, size: 64),
+                            SizedBox(height: 16),
+                            Text('Erro ao carregar imagem',
+                                style: TextStyle(color: Colors.white)),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               );
             },
@@ -557,7 +695,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
             Positioned(
               bottom: 20.0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(20),
