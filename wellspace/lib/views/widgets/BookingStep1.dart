@@ -12,26 +12,36 @@ class BookingStep1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Text('Escolha como deseja realizar sua reserva', style: TextStyle(color: Colors.grey)),
+        // Texto instrutivo com cor adaptável
+        Text(
+          'Escolha como deseja realizar sua reserva',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
         const SizedBox(height: 16),
         _buildBookingTypeOption(
           context: context,
           title: 'Reserva Imediata',
-          subtitle: 'Sua reserva é confirmada automaticamente, sem necessidade de aprovação do anfitrião. Ideal para quem precisa de garantia imediata.',
+          subtitle:
+              'Sua reserva é confirmada automaticamente, sem necessidade de aprovação do anfitrião. Ideal para quem precisa de garantia imediata.',
           value: 'immediate',
-          icon: Icons.check_circle_outline,
+          icon: Icons.check_circle_outline_rounded,
           tag: 'Recomendado',
         ),
         const SizedBox(height: 16),
         _buildBookingTypeOption(
           context: context,
           title: 'Reserva com Confirmação',
-          subtitle: 'Sua solicitação de reserva será enviada ao anfitrião, que terá até 24 horas para confirmar. O pagamento só será processado após a confirmação.',
+          subtitle:
+              'Sua solicitação de reserva será enviada ao anfitrião, que terá até 24 horas para confirmar. O pagamento só será processado após a confirmação.',
           value: 'confirmation',
-          icon: Icons.hourglass_empty_outlined,
+          icon: Icons.hourglass_empty_rounded,
           tag: 'Resposta em até 24h',
         ),
       ],
@@ -48,17 +58,29 @@ class BookingStep1 extends StatelessWidget {
   }) {
     final theme = Theme.of(context);
     final isSelected = bookingType == value;
-    final primaryColor = const Color(0xFF4F46E5);
 
-    return GestureDetector(
+    // Cores dinâmicas baseadas no estado de seleção e no tema
+    final Color backgroundColor = isSelected
+        ? theme.colorScheme.primary.withOpacity(0.08)
+        : Colors.transparent;
+    final Color borderColor =
+        isSelected ? theme.colorScheme.primary : theme.colorScheme.outline;
+    final Color subtitleColor = theme.colorScheme.onSurface.withOpacity(0.7);
+    final Color iconAndDetailColor = isSelected
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurface.withOpacity(0.6);
+
+    return InkWell(
       onTap: () => onChanged(value),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.05) : Colors.transparent,
+          color: backgroundColor,
           border: Border.all(
-            color: isSelected ? primaryColor : Colors.grey.shade300,
-            width: 1.5,
+            color: borderColor,
+            width:
+                isSelected ? 2.0 : 1.5, // Borda mais espessa quando selecionado
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -68,35 +90,72 @@ class BookingStep1 extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  child: Text(title,
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(width: 8),
                 if (tag != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isSelected ? primaryColor : Colors.grey.shade200,
+                      // Cor da tag adaptável
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.secondaryContainer,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(tag, style: TextStyle(fontSize: 12, color: isSelected ? Colors.white : Colors.black87, fontWeight: FontWeight.w500)),
+                    child: Text(
+                      tag,
+                      style: TextStyle(
+                        fontSize: 12,
+                        // Cor do texto da tag adaptável
+                        color: isSelected
+                            ? theme.colorScheme.onPrimary
+                            : theme.colorScheme.onSecondaryContainer,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 Radio<String>(
                   value: value,
                   groupValue: bookingType,
                   onChanged: (val) => onChanged(val!),
-                  activeColor: primaryColor,
+                  // Cores do Radio adaptáveis
+                  activeColor: theme.colorScheme.primary,
+                  fillColor: MaterialStateProperty.resolveWith<Color>(
+                    (Set<MaterialState> states) {
+                      if (states.contains(MaterialState.selected)) {
+                        return theme.colorScheme.primary;
+                      }
+                      return theme.colorScheme.onSurface.withOpacity(0.6);
+                    },
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            Text(subtitle, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
-            const SizedBox(height: 8),
+            Text(subtitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                    color: subtitleColor,
+                    height: 1.4)), // Adicionado altura de linha
+            const SizedBox(height: 12),
             Row(
               children: [
-                Icon(icon, color: isSelected ? primaryColor : Colors.grey.shade600, size: 16),
-                const SizedBox(width: 4),
+                Icon(icon,
+                    color: iconAndDetailColor,
+                    size: 18), // Aumentado o tamanho do ícone
+                const SizedBox(width: 8),
                 Expanded(
-                  child: Text(value == 'immediate' ? 'Confirmação instantânea' : 'Resposta em até 24h', style: TextStyle(fontSize: 14, color: isSelected ? primaryColor : Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                  child: Text(
+                      value == 'immediate'
+                          ? 'Confirmação instantânea'
+                          : 'Aguarde a confirmação',
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: iconAndDetailColor,
+                          fontWeight: FontWeight.w500)),
                 ),
               ],
             ),
