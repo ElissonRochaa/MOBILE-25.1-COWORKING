@@ -28,12 +28,12 @@ class BookingStep4 extends StatelessWidget {
   });
 
   String _formatDate(DateTime date) => DateFormat('dd/MM/yyyy').format(date);
-  String _formatTime(BuildContext context, TimeOfDay time) => time.format(context);
+  String _formatTime(BuildContext context, TimeOfDay time) =>
+      time.format(context);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const primaryColor = Color(0xFF4F46E5);
     final startMinutes = startTime.hour * 60 + startTime.minute;
     final endMinutes = endTime.hour * 60 + endTime.minute;
     final durationInHours = (endMinutes - startMinutes) / 60;
@@ -41,32 +41,49 @@ class BookingStep4 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Verifique os detalhes da sua reserva antes de confirmar', style: TextStyle(color: Colors.grey)),
+        Text(
+          'Verifique os detalhes da sua reserva antes de confirmar',
+          // Cor de texto adaptável para a instrução.
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            color: Colors.white,
+            // Cor do card de resumo adaptável.
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
+            // Cor da borda adaptável.
+            border:
+                Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
           ),
           child: Column(
             children: <Widget>[
-              _buildReviewRow('Espaço:', sala.nomeSala),
-              _buildReviewRow('Tipo de Reserva:', 'Reserva Imediata'),
-              _buildReviewRow('Data:', _formatDate(selectedDate)),
-              _buildReviewRow('Horário:', '${_formatTime(context, startTime)} - ${_formatTime(context, endTime)}'),
-              _buildReviewRow('Duração:', '${durationInHours.toStringAsFixed(0)} hora(s)'),
-              _buildReviewRow('Pessoas:', '$numberOfPeople'),
-              _buildReviewRow('Método de Pagamento:', paymentMethod == 'credit' ? 'Cartão de Crédito' : 'Pix'),
+              _buildReviewRow(context, 'Espaço:', sala.nomeSala),
+              _buildReviewRow(context, 'Tipo de Reserva:', 'Reserva Imediata'),
+              _buildReviewRow(context, 'Data:', _formatDate(selectedDate)),
+              _buildReviewRow(context, 'Horário:',
+                  '${_formatTime(context, startTime)} - ${_formatTime(context, endTime)}'),
+              _buildReviewRow(context, 'Duração:',
+                  '${durationInHours.toStringAsFixed(1).replaceAll('.0', '')} hora(s)'),
+              _buildReviewRow(context, 'Pessoas:', '$numberOfPeople'),
+              _buildReviewRow(context, 'Método de Pagamento:',
+                  paymentMethod == 'credit' ? 'Cartão de Crédito' : 'Pix'),
               const Divider(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Total:', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text('Total:',
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold)),
                   Text(
                     'R\$ ${total.toStringAsFixed(2)}',
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: primaryColor),
+                    style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        // Cor primária do tema para o total.
+                        color: theme.colorScheme.primary),
                   ),
                 ],
               ),
@@ -77,22 +94,31 @@ class BookingStep4 extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(8)
-          ),
+              // Cor de fundo do aviso adaptável.
+              color: theme.colorScheme.secondaryContainer.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(8)),
           child: Row(
             children: [
-              Icon(Icons.info_outline, color: primaryColor, size: 20),
+              // Cor do ícone adaptável.
+              Icon(Icons.info_outline_rounded,
+                  color: theme.colorScheme.onSecondaryContainer, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Política de Cancelamento', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Política de Cancelamento',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSecondaryContainer)),
                     const SizedBox(height: 4),
                     Text(
                       'Cancelamento gratuito até 24 horas antes do início da reserva. Após esse período, será cobrada uma taxa de 50% do valor total.',
-                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade700),
+                      // Cor do texto do aviso adaptável.
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSecondaryContainer
+                              .withOpacity(0.8),
+                          height: 1.4),
                     ),
                   ],
                 ),
@@ -102,29 +128,50 @@ class BookingStep4 extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Checkbox(
-              value: acceptedTerms,
-              onChanged: onTermsChanged,
-              activeColor: primaryColor,
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: Checkbox(
+                value: acceptedTerms,
+                onChanged: onTermsChanged,
+                // Cor do checkbox adaptável.
+                activeColor: theme.colorScheme.primary,
+                checkColor: theme.colorScheme.onPrimary,
+              ),
             ),
+            const SizedBox(width: 12),
             Expanded(
               child: RichText(
                 text: TextSpan(
-                  style: theme.textTheme.bodySmall,
+                  // Estilo padrão do texto adaptável.
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(color: theme.colorScheme.onSurface),
                   children: [
                     const TextSpan(text: 'Eu concordo com os '),
                     TextSpan(
                       text: 'Termos de Uso',
-                      style: const TextStyle(color: primaryColor, decoration: TextDecoration.underline),
-                      recognizer: TapGestureRecognizer()..onTap = () { /* Navegar para Termos */ },
+                      // Cor do link adaptável.
+                      style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          decoration: TextDecoration.underline),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          /* TODO: Navegar para a tela de Termos */
+                        },
                     ),
                     const TextSpan(text: ' e confirmo que li a '),
                     TextSpan(
                       text: 'Política de Privacidade',
-                      style: const TextStyle(color: primaryColor, decoration: TextDecoration.underline),
-                      recognizer: TapGestureRecognizer()..onTap = () { /* Navegar para Privacidade */ },
+                      // Cor do link adaptável.
+                      style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          decoration: TextDecoration.underline),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          /* TODO: Navegar para a tela de Privacidade */
+                        },
                     ),
                     const TextSpan(text: '.'),
                   ],
@@ -137,18 +184,26 @@ class BookingStep4 extends StatelessWidget {
     );
   }
 
-  Widget _buildReviewRow(String label, String value) {
+  // Helper para construir as linhas de resumo.
+  Widget _buildReviewRow(BuildContext context, String label, String value) {
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey)),
-          const SizedBox(width: 16),
+          Text(label,
+              // Cor do rótulo adaptável.
+              style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withOpacity(0.7))),
+          const Spacer(), // Usa Spacer para empurrar o valor para a direita.
           Expanded(
+            flex: 2, // Dá mais espaço para o valor, se necessário
             child: Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              // Cor do valor adaptável.
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
               textAlign: TextAlign.right,
             ),
           ),
