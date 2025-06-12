@@ -54,10 +54,8 @@ class HeroSection extends StatefulWidget {
 }
 
 class _HeroSectionState extends State<HeroSection> {
-  // Controller para gerenciar o texto do campo de busca
   final _searchController = TextEditingController();
 
-  // Liberar o controller da memória quando o widget for descartado
   @override
   void dispose() {
     _searchController.dispose();
@@ -111,7 +109,6 @@ class _HeroSectionState extends State<HeroSection> {
                       children: [
                         Expanded(
                           child: TextField(
-                            // Associando o controller ao TextField
                             controller: _searchController,
                             decoration: InputDecoration(
                               hintText: 'Buscar espaço ideal',
@@ -127,8 +124,6 @@ class _HeroSectionState extends State<HeroSection> {
                         const SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: () {
-                            // Navega para a página de espaços, passando o texto
-                            // do controller como um argumento de rota.
                             Navigator.pushNamed(
                               context,
                               '/espacos',

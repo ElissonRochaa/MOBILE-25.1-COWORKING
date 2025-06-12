@@ -21,14 +21,11 @@ class BookingStep3 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // Texto instrutivo com cor adaptável
         Text('Escolha como deseja realizar o pagamento',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withOpacity(0.7),
             )),
         const SizedBox(height: 16),
-
-        // Container do seletor de pagamento com cor de fundo adaptável
         Container(
           decoration: BoxDecoration(
             color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
@@ -58,8 +55,6 @@ class BookingStep3 extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-
-        // Formulário de Cartão de Crédito
         Visibility(
           visible: isCreditCard,
           child: Form(
@@ -117,7 +112,6 @@ class BookingStep3 extends StatelessWidget {
             ),
           ),
         ),
-        // Seção de Pagamento com Pix
         Visibility(
           visible: !isCreditCard,
           child: Column(
@@ -126,13 +120,10 @@ class BookingStep3 extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                    // Fundo do QR code adaptável
                     color: theme.colorScheme.surfaceVariant,
                     borderRadius: BorderRadius.circular(12)),
                 child: Icon(Icons.qr_code_scanner_rounded,
-                    size: 120,
-                    // Cor do ícone QR code adaptável
-                    color: theme.colorScheme.onSurfaceVariant),
+                    size: 120, color: theme.colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: 16),
               Text('Escaneie o QR Code',
@@ -147,12 +138,10 @@ class BookingStep3 extends StatelessWidget {
                 icon: const Icon(Icons.copy_all_outlined, size: 20),
                 label: const Text('Copiar código Pix'),
                 onPressed: () {
-                  // Lógica para copiar o código Pix
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       content: Text(
                           "Código Pix copiado! (Funcionalidade Simulado)")));
                 },
-                // Estilo do botão adaptável
                 style: OutlinedButton.styleFrom(
                   foregroundColor: theme.colorScheme.primary,
                   side: BorderSide(color: theme.colorScheme.outline),
@@ -169,7 +158,6 @@ class BookingStep3 extends StatelessWidget {
     );
   }
 
-  // Seletor de método de pagamento (Cartão ou Pix)
   Widget _buildPaymentToggle({
     required BuildContext context,
     required String label,
@@ -187,10 +175,8 @@ class BookingStep3 extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          // Cor de fundo adaptável
           color: isSelected ? theme.cardColor : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
-          // Sombra adaptável
           boxShadow: isSelected
               ? [
                   BoxShadow(
@@ -204,7 +190,6 @@ class BookingStep3 extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon,
-                // Cores do ícone adaptáveis
                 color: isSelected
                     ? primaryColor
                     : theme.colorScheme.onSurface.withOpacity(0.6),
@@ -214,7 +199,6 @@ class BookingStep3 extends StatelessWidget {
                 style: TextStyle(
                     fontWeight:
                         isSelected ? FontWeight.bold : FontWeight.normal,
-                    // Cores do texto adaptáveis
                     color: isSelected
                         ? primaryColor
                         : theme.colorScheme.onSurface)),
@@ -224,7 +208,6 @@ class BookingStep3 extends StatelessWidget {
     );
   }
 
-  // Campo de texto para formulário
   Widget _buildTextFormField({
     required BuildContext context,
     required String label,
@@ -238,9 +221,7 @@ class BookingStep3 extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        // Estilo da borda adaptável
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        // Estilo do ícone adaptável
         suffixIcon: icon != null
             ? Icon(icon,
                 size: 20, color: theme.colorScheme.onSurface.withOpacity(0.5))

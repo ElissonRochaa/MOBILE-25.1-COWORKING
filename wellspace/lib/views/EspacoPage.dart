@@ -4,6 +4,13 @@ import 'package:flutter/material.dart';
 import '../models/Sala.dart';
 import '../viewmodels/SalaListViewModel.dart';
 
+enum OpcaoOrdenacao {
+  nenhuma,
+  precoCrescente,
+  precoDecrescente,
+  nomeCrescente,
+}
+
 class EspacosPage extends StatefulWidget {
   const EspacosPage({super.key});
 
@@ -15,15 +22,68 @@ class _EspacosPageState extends State<EspacosPage> {
   bool exibirMapa = false;
   final SalaListViewModel salaListViewModel = SalaListViewModel();
   String searchQuery = '';
+  final _searchController = TextEditingController();
+
+  OpcaoOrdenacao _opcaoOrdenacao = OpcaoOrdenacao.nenhuma;
+  double? _filtroPrecoMaximo;
+  List<String> _filtroDiasSemana = [];
+  double _precoMinimoGeral = 0;
+  double _precoMaximoGeral = 1000;
+
+  bool _didProcessInitialArgs = false;
 
   @override
   void initState() {
     super.initState();
     salaListViewModel.carregarSalas().then((_) {
       if (mounted) {
+        _calcularFaixaDePreco();
         setState(() {});
       }
     });
+  }
+
+  void _calcularFaixaDePreco() {
+    if (salaListViewModel.salas.isEmpty) return;
+    double min = salaListViewModel.salas.first.precoHora;
+    double max = salaListViewModel.salas.first.precoHora;
+    for (var sala in salaListViewModel.salas) {
+      if (sala.precoHora < min) min = sala.precoHora;
+      if (sala.precoHora > max) max = sala.precoHora;
+    }
+    setState(() {
+      _precoMinimoGeral = min;
+      _precoMaximoGeral = max;
+      _filtroPrecoMaximo = max;
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_didProcessInitialArgs) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments is String && arguments.isNotEmpty) {
+        setState(() {
+          searchQuery = arguments;
+          _searchController.text = arguments;
+        });
+      }
+      _didProcessInitialArgs = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  bool get _filtrosAtivos {
+    bool precoFiltrado =
+        _filtroPrecoMaximo != null && _filtroPrecoMaximo! < _precoMaximoGeral;
+    bool diasFiltrados = _filtroDiasSemana.isNotEmpty;
+    return precoFiltrado || diasFiltrados;
   }
 
   @override
@@ -31,9 +91,58 @@ class _EspacosPageState extends State<EspacosPage> {
     final ThemeData theme = Theme.of(context);
     final bool isDarkMode = theme.brightness == Brightness.dark;
 
-    final List<Sala> salasFiltradas = salaListViewModel.salas.where((sala) {
-      return sala.nomeSala.toLowerCase().contains(searchQuery.toLowerCase());
-    }).toList();
+    List<Sala> salasProcessadas = salaListViewModel.salas;
+
+    if (searchQuery.isNotEmpty) {
+      salasProcessadas = salasProcessadas.where((sala) {
+        return sala.nomeSala.toLowerCase().contains(searchQuery.toLowerCase());
+      }).toList();
+    }
+
+    if (_filtroPrecoMaximo != null) {
+      salasProcessadas = salasProcessadas
+          .where((sala) => sala.precoHora <= _filtroPrecoMaximo!)
+          .toList();
+    }
+    if (_filtroDiasSemana.isNotEmpty) {
+      salasProcessadas = salasProcessadas.where((sala) {
+        final diasDisponiveisNaSala =
+            sala.disponibilidadeDiaSemana.toLowerCase();
+        for (String filtroSelecionado in _filtroDiasSemana) {
+          final filtroLower = filtroSelecionado.toLowerCase();
+          if (filtroLower == "todos os dias") {
+            return true;
+          }
+          if (filtroLower == "segunda a sexta") {
+            if (diasDisponiveisNaSala.contains("seg") ||
+                diasDisponiveisNaSala.contains("ter") ||
+                diasDisponiveisNaSala.contains("qua") ||
+                diasDisponiveisNaSala.contains("qui") ||
+                diasDisponiveisNaSala.contains("sex")) {
+              return true;
+            }
+          } else if (diasDisponiveisNaSala.contains(filtroLower)) {
+            return true;
+          }
+        }
+        return false;
+      }).toList();
+    }
+
+    switch (_opcaoOrdenacao) {
+      case OpcaoOrdenacao.precoCrescente:
+        salasProcessadas.sort((a, b) => a.precoHora.compareTo(b.precoHora));
+        break;
+      case OpcaoOrdenacao.precoDecrescente:
+        salasProcessadas.sort((a, b) => b.precoHora.compareTo(a.precoHora));
+        break;
+      case OpcaoOrdenacao.nomeCrescente:
+        salasProcessadas.sort((a, b) =>
+            a.nomeSala.toLowerCase().compareTo(b.nomeSala.toLowerCase()));
+        break;
+      case OpcaoOrdenacao.nenhuma:
+        break;
+    }
 
     return Scaffold(
       drawer: SideMenu(),
@@ -41,19 +150,17 @@ class _EspacosPageState extends State<EspacosPage> {
       appBar: AppBar(
         centerTitle: true,
         elevation: 1,
-        title: Text(
-          'Todos os Espaços',
-        ),
+        title: Text('Todos os Espaços'),
       ),
       body: Column(
         children: [
           _buildSearchBar(context, theme, isDarkMode),
           _buildActionButtons(context, theme, isDarkMode),
-          _buildEspacosEncontrados(context, theme, salasFiltradas.length),
+          _buildEspacosEncontrados(context, theme, salasProcessadas.length),
           Expanded(
             child: exibirMapa
                 ? _buildMapaPlaceholder(context, theme, isDarkMode)
-                : _buildListaEspacos(context, theme, salasFiltradas),
+                : _buildListaEspacos(context, theme, salasProcessadas),
           ),
         ],
       ),
@@ -65,6 +172,7 @@ class _EspacosPageState extends State<EspacosPage> {
     return Padding(
       padding: const EdgeInsets.all(12.0),
       child: TextField(
+        controller: _searchController,
         onChanged: (value) => setState(() => searchQuery = value),
         style: TextStyle(color: theme.colorScheme.onSurface),
         decoration: InputDecoration(
@@ -104,19 +212,32 @@ class _EspacosPageState extends State<EspacosPage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );
 
+    final ButtonStyle activeFilterButtonStyle = buttonStyle.copyWith(
+      backgroundColor:
+          MaterialStateProperty.all(theme.colorScheme.primaryContainer),
+      foregroundColor:
+          MaterialStateProperty.all(theme.colorScheme.onPrimaryContainer),
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         children: [
           ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.filter_list, size: 18),
-            label: const Text('Filtros'),
-            style: buttonStyle,
+            onPressed: _exibirDialogoDeFiltros,
+            icon: Icon(
+              Icons.filter_list,
+              size: 18,
+              color: _filtrosAtivos
+                  ? theme.colorScheme.onPrimaryContainer
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
+            label: Text('Filtros'),
+            style: _filtrosAtivos ? activeFilterButtonStyle : buttonStyle,
           ),
           const SizedBox(width: 10),
           ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: _exibirOpcoesDeOrdenacao,
             icon: const Icon(Icons.sort, size: 18),
             label: const Text('Ordenar por'),
             style: buttonStyle,
@@ -140,6 +261,139 @@ class _EspacosPageState extends State<EspacosPage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _exibirOpcoesDeOrdenacao() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Wrap(
+          children: <Widget>[
+            ListTile(
+              leading: Icon(Icons.arrow_upward),
+              title: Text('Preço (menor para maior)'),
+              onTap: () {
+                setState(() => _opcaoOrdenacao = OpcaoOrdenacao.precoCrescente);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.arrow_downward),
+              title: Text('Preço (maior para menor)'),
+              onTap: () {
+                setState(
+                    () => _opcaoOrdenacao = OpcaoOrdenacao.precoDecrescente);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.sort_by_alpha),
+              title: Text('Nome (A-Z)'),
+              onTap: () {
+                setState(() => _opcaoOrdenacao = OpcaoOrdenacao.nomeCrescente);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.clear),
+              title: Text('Remover Ordenação'),
+              onTap: () {
+                setState(() => _opcaoOrdenacao = OpcaoOrdenacao.nenhuma);
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _exibirDialogoDeFiltros() {
+    double tempPrecoMaximo = _filtroPrecoMaximo ?? _precoMaximoGeral;
+    List<String> tempDiasSemana = List.from(_filtroDiasSemana);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final diasDisponiveis = [
+              "Segunda a Sexta",
+              "Sab",
+              "Dom",
+              "Todos os dias"
+            ];
+
+            return AlertDialog(
+              title: Text('Filtros'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        'Preço máximo por hora: R\$ ${tempPrecoMaximo.toStringAsFixed(2)}',
+                        style: Theme.of(context).textTheme.bodyLarge),
+                    Slider(
+                      min: _precoMinimoGeral,
+                      max: _precoMaximoGeral,
+                      value: tempPrecoMaximo,
+                      divisions: 20,
+                      label: 'R\$ ${tempPrecoMaximo.toStringAsFixed(2)}',
+                      onChanged: (value) {
+                        setDialogState(() {
+                          tempPrecoMaximo = value;
+                        });
+                      },
+                    ),
+                    Divider(),
+                    Text('Dias da semana:',
+                        style: Theme.of(context).textTheme.bodyLarge),
+                    ...diasDisponiveis.map((dia) {
+                      return CheckboxListTile(
+                        title: Text(dia),
+                        value: tempDiasSemana.contains(dia),
+                        onChanged: (bool? value) {
+                          setDialogState(() {
+                            if (value == true) {
+                              tempDiasSemana.add(dia);
+                            } else {
+                              tempDiasSemana.remove(dia);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Limpar'),
+                  onPressed: () {
+                    setDialogState(() {
+                      tempPrecoMaximo = _precoMaximoGeral;
+                      tempDiasSemana.clear();
+                    });
+                  },
+                ),
+                ElevatedButton(
+                  child: Text('Aplicar'),
+                  onPressed: () {
+                    setState(() {
+                      _filtroPrecoMaximo = tempPrecoMaximo;
+                      _filtroDiasSemana = tempDiasSemana;
+                    });
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -169,7 +423,8 @@ class _EspacosPageState extends State<EspacosPage> {
     }
     if (salas.isEmpty) {
       return Center(
-          child: Text('Nenhum espaço encontrado',
+          child: Text('Nenhum espaço encontrado com esses critérios',
+              textAlign: TextAlign.center,
               style: TextStyle(color: theme.colorScheme.onBackground)));
     }
     return ListView.builder(

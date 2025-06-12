@@ -17,7 +17,6 @@ class BookingStep1 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // Texto instrutivo com cor adaptável
         Text(
           'Escolha como deseja realizar sua reserva',
           style: theme.textTheme.bodyMedium?.copyWith(
@@ -59,7 +58,6 @@ class BookingStep1 extends StatelessWidget {
     final theme = Theme.of(context);
     final isSelected = bookingType == value;
 
-    // Cores dinâmicas baseadas no estado de seleção e no tema
     final Color backgroundColor = isSelected
         ? theme.colorScheme.primary.withOpacity(0.08)
         : Colors.transparent;
@@ -79,8 +77,7 @@ class BookingStep1 extends StatelessWidget {
           color: backgroundColor,
           border: Border.all(
             color: borderColor,
-            width:
-                isSelected ? 2.0 : 1.5, // Borda mais espessa quando selecionado
+            width: isSelected ? 2.0 : 1.5,
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -100,7 +97,6 @@ class BookingStep1 extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      // Cor da tag adaptável
                       color: isSelected
                           ? theme.colorScheme.primary
                           : theme.colorScheme.secondaryContainer,
@@ -110,7 +106,6 @@ class BookingStep1 extends StatelessWidget {
                       tag,
                       style: TextStyle(
                         fontSize: 12,
-                        // Cor do texto da tag adaptável
                         color: isSelected
                             ? theme.colorScheme.onPrimary
                             : theme.colorScheme.onSecondaryContainer,
@@ -122,7 +117,6 @@ class BookingStep1 extends StatelessWidget {
                   value: value,
                   groupValue: bookingType,
                   onChanged: (val) => onChanged(val!),
-                  // Cores do Radio adaptáveis
                   activeColor: theme.colorScheme.primary,
                   fillColor: MaterialStateProperty.resolveWith<Color>(
                     (Set<MaterialState> states) {
@@ -137,15 +131,12 @@ class BookingStep1 extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(subtitle,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                    color: subtitleColor,
-                    height: 1.4)), // Adicionado altura de linha
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: subtitleColor, height: 1.4)),
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(icon,
-                    color: iconAndDetailColor,
-                    size: 18), // Aumentado o tamanho do ícone
+                Icon(icon, color: iconAndDetailColor, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

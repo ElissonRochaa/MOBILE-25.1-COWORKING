@@ -43,7 +43,6 @@ class BookingStep4 extends StatelessWidget {
       children: [
         Text(
           'Verifique os detalhes da sua reserva antes de confirmar',
-          // Cor de texto adaptável para a instrução.
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurface.withOpacity(0.7),
           ),
@@ -52,10 +51,8 @@ class BookingStep4 extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            // Cor do card de resumo adaptável.
             color: theme.cardColor,
             borderRadius: BorderRadius.circular(12),
-            // Cor da borda adaptável.
             border:
                 Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
           ),
@@ -82,7 +79,6 @@ class BookingStep4 extends StatelessWidget {
                     'R\$ ${total.toStringAsFixed(2)}',
                     style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        // Cor primária do tema para o total.
                         color: theme.colorScheme.primary),
                   ),
                 ],
@@ -94,12 +90,10 @@ class BookingStep4 extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-              // Cor de fundo do aviso adaptável.
               color: theme.colorScheme.secondaryContainer.withOpacity(0.4),
               borderRadius: BorderRadius.circular(8)),
           child: Row(
             children: [
-              // Cor do ícone adaptável.
               Icon(Icons.info_outline_rounded,
                   color: theme.colorScheme.onSecondaryContainer, size: 20),
               const SizedBox(width: 12),
@@ -114,7 +108,6 @@ class BookingStep4 extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Cancelamento gratuito até 24 horas antes do início da reserva. Após esse período, será cobrada uma taxa de 50% do valor total.',
-                      // Cor do texto do aviso adaptável.
                       style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSecondaryContainer
                               .withOpacity(0.8),
@@ -136,7 +129,6 @@ class BookingStep4 extends StatelessWidget {
               child: Checkbox(
                 value: acceptedTerms,
                 onChanged: onTermsChanged,
-                // Cor do checkbox adaptável.
                 activeColor: theme.colorScheme.primary,
                 checkColor: theme.colorScheme.onPrimary,
               ),
@@ -145,33 +137,24 @@ class BookingStep4 extends StatelessWidget {
             Expanded(
               child: RichText(
                 text: TextSpan(
-                  // Estilo padrão do texto adaptável.
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(color: theme.colorScheme.onSurface),
                   children: [
                     const TextSpan(text: 'Eu concordo com os '),
                     TextSpan(
                       text: 'Termos de Uso',
-                      // Cor do link adaptável.
                       style: TextStyle(
                           color: theme.colorScheme.primary,
                           decoration: TextDecoration.underline),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () {
-                          /* TODO: Navegar para a tela de Termos */
-                        },
+                      recognizer: TapGestureRecognizer()..onTap = () {},
                     ),
                     const TextSpan(text: ' e confirmo que li a '),
                     TextSpan(
                       text: 'Política de Privacidade',
-                      // Cor do link adaptável.
                       style: TextStyle(
                           color: theme.colorScheme.primary,
                           decoration: TextDecoration.underline),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () {
-                          /* TODO: Navegar para a tela de Privacidade */
-                        },
+                      recognizer: TapGestureRecognizer()..onTap = () {},
                     ),
                     const TextSpan(text: '.'),
                   ],
@@ -184,7 +167,6 @@ class BookingStep4 extends StatelessWidget {
     );
   }
 
-  // Helper para construir as linhas de resumo.
   Widget _buildReviewRow(BuildContext context, String label, String value) {
     final theme = Theme.of(context);
     return Padding(
@@ -193,15 +175,13 @@ class BookingStep4 extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              // Cor do rótulo adaptável.
               style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurface.withOpacity(0.7))),
-          const Spacer(), // Usa Spacer para empurrar o valor para a direita.
+          const Spacer(),
           Expanded(
-            flex: 2, // Dá mais espaço para o valor, se necessário
+            flex: 2,
             child: Text(
               value,
-              // Cor do valor adaptável.
               style: theme.textTheme.bodyMedium
                   ?.copyWith(fontWeight: FontWeight.w600),
               textAlign: TextAlign.right,
