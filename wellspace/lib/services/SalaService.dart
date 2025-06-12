@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/Sala.dart';
 
 class SalaService {
-  static const String _baseUrl = 'http://localhost:8080';
+  static const String _baseUrl = 'https://wellspace-app.onrender.com';
   static final _storage = const FlutterSecureStorage();
 
   static Future<String> _getTokenOrThrow() async {
