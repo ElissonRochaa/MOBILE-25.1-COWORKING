@@ -7,7 +7,7 @@ import '../models/Usuario.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UsuarioService {
-  static const String baseUrl = 'http://localhost:8080'; 
+  static const String baseUrl = 'https://wellspace-app.onrender.com';
   static final _storage = const FlutterSecureStorage();
   static const Duration _timeoutDuration = Duration(seconds: 15);
 
@@ -43,15 +43,18 @@ class UsuarioService {
       var streamedResponse = await request.send().timeout(_timeoutDuration);
       var responseString = await streamedResponse.stream.bytesToString();
 
-      if (streamedResponse.statusCode == 200 || streamedResponse.statusCode == 201) {
+      if (streamedResponse.statusCode == 200 ||
+          streamedResponse.statusCode == 201) {
         return true;
       } else {
-        throw Exception('Erro no cadastro (status ${streamedResponse.statusCode}): $responseString');
+        throw Exception(
+            'Erro no cadastro (status ${streamedResponse.statusCode}): $responseString');
       }
     } on TimeoutException catch (_) {
       throw Exception('Tempo de requisição esgotado ao tentar cadastrar usuário.');
     } on http.ClientException catch (e) {
-      throw Exception('Erro de conexão ao tentar cadastrar usuário: ${e.message}');
+      throw Exception(
+          'Erro de conexão ao tentar cadastrar usuário: ${e.message}');
     } catch (e) {
       if (e.toString().contains('Erro no cadastro (status') ||
           e.toString().contains('Tempo de requisição esgotado') ||
@@ -64,16 +67,19 @@ class UsuarioService {
 
   static Future<String> login(String email, String senha) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
-        body: json.encode({'email': email, 'senha': senha}),
-      ).timeout(_timeoutDuration);
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/auth/login'),
+            headers: {'Content-Type': 'application/json; charset=UTF-8'},
+            body: json.encode({'email': email, 'senha': senha}),
+          )
+          .timeout(_timeoutDuration);
 
       if (response.statusCode == 200) {
         return response.body;
       } else {
-        throw Exception('Falha no login (status ${response.statusCode}): ${response.body}');
+        throw Exception(
+            'Falha no login (status ${response.statusCode}): ${response.body}');
       }
     } on TimeoutException catch (_) {
       throw Exception('Tempo de requisição esgotado ao tentar fazer login.');
@@ -125,24 +131,28 @@ class UsuarioService {
     }
 
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/usuario/buscar/$usuarioId'),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(_timeoutDuration);
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/usuario/buscar/$usuarioId'),
+            headers: {
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(_timeoutDuration);
 
       if (response.statusCode == 200) {
         final jsonBody = json.decode(utf8.decode(response.bodyBytes));
         return Usuario.fromJson(jsonBody);
       } else {
-        throw Exception('Erro ao buscar usuário (status ${response.statusCode}): ${response.body}');
+        throw Exception(
+            'Erro ao buscar usuário (status ${response.statusCode}): ${response.body}');
       }
     } on TimeoutException catch (_) {
       throw Exception('Tempo de requisição esgotado ao buscar dados do usuário.');
     } on http.ClientException catch (e) {
-      throw Exception('Erro de conexão ao buscar dados do usuário: ${e.message}');
+      throw Exception(
+          'Erro de conexão ao buscar dados do usuário: ${e.message}');
     } catch (e) {
       rethrow;
     }
@@ -150,21 +160,26 @@ class UsuarioService {
 
   static Future<void> requestPasswordReset(String email) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/forgot-password'),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
-        body: json.encode({'email': email}),
-      ).timeout(_timeoutDuration);
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/auth/forgot-password'),
+            headers: {'Content-Type': 'application/json; charset=UTF-8'},
+            body: json.encode({'email': email}),
+          )
+          .timeout(_timeoutDuration);
 
       if (response.statusCode == 200) {
         return;
       } else {
-        throw Exception('Falha ao solicitar redefinição de senha (status ${response.statusCode}): ${response.body}');
+        throw Exception(
+            'Falha ao solicitar redefinição de senha (status ${response.statusCode}): ${response.body}');
       }
     } on TimeoutException catch (_) {
-      throw Exception('Tempo de requisição esgotado ao solicitar redefinição de senha.');
+      throw Exception(
+          'Tempo de requisição esgotado ao solicitar redefinição de senha.');
     } on http.ClientException catch (e) {
-      throw Exception('Erro de conexão ao solicitar redefinição de senha: ${e.message}');
+      throw Exception(
+          'Erro de conexão ao solicitar redefinição de senha: ${e.message}');
     } catch (e) {
       rethrow;
     }
@@ -172,21 +187,26 @@ class UsuarioService {
 
   static Future<bool> submitNewPassword(String token, String newPassword) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/reset-password'),
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
-        body: json.encode({'token': token, 'newPassword': newPassword}),
-      ).timeout(_timeoutDuration);
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/auth/reset-password'),
+            headers: {'Content-Type': 'application/json; charset=UTF-8'},
+            body: json.encode({'token': token, 'newPassword': newPassword}),
+          )
+          .timeout(_timeoutDuration);
 
       if (response.statusCode == 200) {
         return true;
       } else {
-        throw Exception('Falha ao redefinir senha (status ${response.statusCode}): ${response.body}');
+        throw Exception(
+            'Falha ao redefinir senha (status ${response.statusCode}): ${response.body}');
       }
     } on TimeoutException catch (_) {
-      throw Exception('Tempo de requisição esgotado ao tentar redefinir a senha.');
+      throw Exception(
+          'Tempo de requisição esgotado ao tentar redefinir a senha.');
     } on http.ClientException catch (e) {
-      throw Exception('Erro de conexão ao tentar redefinir a senha: ${e.message}');
+      throw Exception(
+          'Erro de conexão ao tentar redefinir a senha: ${e.message}');
     } catch (e) {
       rethrow;
     }
@@ -200,7 +220,8 @@ class UsuarioService {
   }) async {
     final token = await obterToken();
     if (token == null) {
-      throw Exception('Token não encontrado para atualizar usuário. Faça login novamente.');
+      throw Exception(
+          'Token não encontrado para atualizar usuário. Faça login novamente.');
     }
 
     try {
@@ -223,18 +244,21 @@ class UsuarioService {
         ));
       }
 
-      var streamedResponse = await request.send().timeout(UsuarioService._timeoutDuration);
+      var streamedResponse =
+          await request.send().timeout(UsuarioService._timeoutDuration);
       var responseString = await streamedResponse.stream.bytesToString();
-      
+
       if (streamedResponse.statusCode == 200) {
         return true;
       } else {
-        throw Exception('Erro ao atualizar usuário (status ${streamedResponse.statusCode}): $responseString');
+        throw Exception(
+            'Erro ao atualizar usuário (status ${streamedResponse.statusCode}): $responseString');
       }
     } on TimeoutException catch (_) {
       throw Exception('Tempo de requisição esgotado ao tentar atualizar usuário.');
     } on http.ClientException catch (e) {
-      throw Exception('Erro de conexão ao tentar atualizar usuário: ${e.message}');
+      throw Exception(
+          'Erro de conexão ao tentar atualizar usuário: ${e.message}');
     } catch (e) {
       if (e.toString().contains('Erro ao atualizar usuário (status') ||
           e.toString().contains('Tempo de requisição esgotado') ||
