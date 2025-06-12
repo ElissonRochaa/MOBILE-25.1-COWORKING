@@ -46,8 +46,23 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class HeroSection extends StatelessWidget {
+class HeroSection extends StatefulWidget {
   const HeroSection({Key? key}) : super(key: key);
+
+  @override
+  State<HeroSection> createState() => _HeroSectionState();
+}
+
+class _HeroSectionState extends State<HeroSection> {
+  // Controller para gerenciar o texto do campo de busca
+  final _searchController = TextEditingController();
+
+  // Liberar o controller da memória quando o widget for descartado
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +111,8 @@ class HeroSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: TextField(
+                            // Associando o controller ao TextField
+                            controller: _searchController,
                             decoration: InputDecoration(
                               hintText: 'Buscar espaço ideal',
                               prefixIcon: const Icon(Icons.search),
@@ -110,7 +127,13 @@ class HeroSection extends StatelessWidget {
                         const SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, '/espacos');
+                            // Navega para a página de espaços, passando o texto
+                            // do controller como um argumento de rota.
+                            Navigator.pushNamed(
+                              context,
+                              '/espacos',
+                              arguments: _searchController.text,
+                            );
                           },
                           child: const Text('Buscar'),
                           style: ElevatedButton.styleFrom(
