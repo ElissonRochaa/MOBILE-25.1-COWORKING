@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart'; // Necessário para o formato de data em português
 
 class BookingStep2 extends StatelessWidget {
   final DateTime selectedDate;
@@ -22,26 +23,42 @@ class BookingStep2 extends StatelessWidget {
     required this.onEndTimeChanged,
     required this.onPeopleChanged,
   });
-  
-  String _formatDate(DateTime date) => DateFormat("d 'de' MMMM 'de' yyyy", 'pt_BR').format(date);
-  String _formatTime(BuildContext context, TimeOfDay time) => time.format(context);
+
+  String _formatDate(DateTime date) {
+    // Garante que os dados de localização pt_BR estejam carregados
+    initializeDateFormatting('pt_BR');
+    return DateFormat("d 'de' MMMM 'de' yyyy", 'pt_BR').format(date);
+  }
+
+  String _formatTime(BuildContext context, TimeOfDay time) =>
+      time.format(context);
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context); // Obtém o tema atual
+
     // Lista de horários de exemplo
-    final List<TimeOfDay> availableTimes = List.generate(12, (i) => TimeOfDay(hour: 8 + i, minute: 0));
+    final List<TimeOfDay> availableTimes =
+        List.generate(12, (i) => TimeOfDay(hour: 8 + i, minute: 0));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Text('Selecione a data e o horário da sua reserva', style: TextStyle(color: Colors.grey)),
+        // Texto instrutivo com cor adaptável
+        Text('Selecione a data e o horário da sua reserva',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withOpacity(0.7),
+            )),
         const SizedBox(height: 24),
-        
-        const Text('Data da Reserva', style: TextStyle(fontWeight: FontWeight.w600)),
+
+        // Título da seção com estilo do tema
+        Text('Data da Reserva',
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         _buildPickerTile(
           context: context,
-          icon: Icons.calendar_today,
+          icon: Icons.calendar_today_outlined, // Ícone outlined
           value: _formatDate(selectedDate),
           onTap: () async {
             final date = await showDatePicker(
@@ -50,28 +67,35 @@ class BookingStep2 extends StatelessWidget {
               firstDate: DateTime.now(),
               lastDate: DateTime(2101),
               locale: const Locale('pt', 'BR'),
+              // O DatePicker geralmente herda bem o tema, mas um builder pode dar mais controle
             );
             if (date != null) onDateChanged(date);
           },
         ),
 
         const SizedBox(height: 24),
-        const Text('Horário', style: TextStyle(fontWeight: FontWeight.w600)),
+        Text('Horário',
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Hora de Início', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  Text('Hora de Início',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withOpacity(0.7))),
                   const SizedBox(height: 4),
                   _buildPickerTile(
                     context: context,
                     icon: Icons.access_time,
                     value: _formatTime(context, startTime),
                     onTap: () async {
-                      final time = await showTimePicker(context: context, initialTime: startTime);
+                      final time = await showTimePicker(
+                          context: context, initialTime: startTime);
                       if (time != null) onStartTimeChanged(time);
                     },
                   ),
@@ -83,14 +107,17 @@ class BookingStep2 extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Hora de Término', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  Text('Hora de Término',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withOpacity(0.7))),
                   const SizedBox(height: 4),
                   _buildPickerTile(
                     context: context,
                     icon: Icons.access_time_filled,
                     value: _formatTime(context, endTime),
                     onTap: () async {
-                      final time = await showTimePicker(context: context, initialTime: endTime);
+                      final time = await showTimePicker(
+                          context: context, initialTime: endTime);
                       if (time != null) onEndTimeChanged(time);
                     },
                   ),
@@ -101,13 +128,16 @@ class BookingStep2 extends StatelessWidget {
         ),
 
         const SizedBox(height: 24),
-        const Text('Horários Disponíveis', style: TextStyle(fontWeight: FontWeight.w600)),
+        Text('Horários Disponíveis (Início)',
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8.0,
           runSpacing: 8.0,
           children: availableTimes.map((time) {
-            bool isSelected = time.hour == startTime.hour && time.minute == startTime.minute;
+            bool isSelected =
+                time.hour == startTime.hour && time.minute == startTime.minute;
             return ChoiceChip(
               label: Text(_formatTime(context, time)),
               selected: isSelected,
@@ -116,35 +146,55 @@ class BookingStep2 extends StatelessWidget {
                   onStartTimeChanged(time);
                 }
               },
-              selectedColor: const Color(0xFF4F46E5).withOpacity(0.1),
+              // Estilo do Chip adaptável
+              backgroundColor: theme.colorScheme.surfaceVariant,
+              selectedColor: theme.colorScheme.primaryContainer,
               labelStyle: TextStyle(
-                color: isSelected ? const Color(0xFF4F46E5) : Colors.black87, 
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal
+                color: isSelected
+                    ? theme.colorScheme.onPrimaryContainer
+                    : theme.colorScheme.onSurfaceVariant,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: isSelected ? const Color(0xFF4F46E5) : Colors.grey.shade300)
+                side: BorderSide(
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.outline.withOpacity(0.5)),
               ),
+              showCheckmark: false, // Opcional: para um visual mais limpo
             );
           }).toList(),
         ),
 
         const SizedBox(height: 24),
-        const Text('Número de Pessoas', style: TextStyle(fontWeight: FontWeight.w600)),
+        Text('Número de Pessoas',
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
               icon: const Icon(Icons.remove_circle_outline),
-              onPressed: () => (numberOfPeople > 1) ? onPeopleChanged(numberOfPeople - 1) : null,
-              color: Colors.grey,
+              onPressed: () => (numberOfPeople > 1)
+                  ? onPeopleChanged(numberOfPeople - 1)
+                  : null,
+              // Cor do ícone adaptável
+              color: (numberOfPeople > 1)
+                  ? theme.colorScheme.onSurface.withOpacity(0.7)
+                  : theme.colorScheme.onSurface.withOpacity(0.3),
             ),
-            Text('$numberOfPeople', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(width: 16),
+            Text('$numberOfPeople',
+                style: theme.textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(width: 16),
             IconButton(
               icon: const Icon(Icons.add_circle_outline),
               onPressed: () => onPeopleChanged(numberOfPeople + 1),
-              color: const Color(0xFF4F46E5),
+              // Cor do ícone adaptável
+              color: theme.colorScheme.primary,
             ),
           ],
         )
@@ -158,20 +208,34 @@ class BookingStep2 extends StatelessWidget {
     required String value,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.grey.shade600, size: 20),
-            const SizedBox(width: 8),
-            Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-          ],
+    final theme = Theme.of(context); // Obtém o tema
+
+    return Material(
+      // Adicionado Material para o efeito de InkWell
+      color: theme.colorScheme.surface, // Cor de fundo do tile
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            // Cor da borda adaptável
+            border:
+                Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
+          ),
+          child: Row(
+            children: [
+              // Cor do ícone adaptável
+              Icon(icon, color: theme.colorScheme.primary, size: 20),
+              const SizedBox(width: 12),
+              // Cor do texto adaptável
+              Text(value,
+                  style: theme.textTheme.bodyLarge
+                      ?.copyWith(fontWeight: FontWeight.w500)),
+            ],
+          ),
         ),
       ),
     );
