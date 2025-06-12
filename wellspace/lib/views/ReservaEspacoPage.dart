@@ -17,6 +17,7 @@ class ReservaStepperScreen extends StatefulWidget {
 class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
   int _currentStep = 0;
 
+  // Os dados de estado permanecem os mesmos
   String bookingType = 'immediate';
   DateTime selectedDate = DateTime.now();
   TimeOfDay startTime = const TimeOfDay(hour: 9, minute: 0);
@@ -32,17 +33,20 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
     final durationInMinutes = endMinutes - startMinutes;
 
     if (durationInMinutes <= 0) return 0.0;
-    
+
     final durationInHours = durationInMinutes / 60;
     return durationInHours * widget.sala.precoHora;
   }
-  
+
   void _nextStep() {
-    
+    final theme = Theme.of(context); // Obtém o tema para o SnackBar
+
     if (_currentStep < 3) {
       setState(() => _currentStep++);
     } else {
-      final isPaymentValid = (paymentMethod == 'credit' && (paymentFormKey.currentState?.validate() ?? false)) || paymentMethod == 'pix';
+      final isPaymentValid = (paymentMethod == 'credit' &&
+              (paymentFormKey.currentState?.validate() ?? false)) ||
+          paymentMethod == 'pix';
       if (isPaymentValid && acceptedTerms) {
         Navigator.push(
           context,
@@ -59,9 +63,11 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
         );
       } else if (!acceptedTerms) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Você deve aceitar os termos e condições para continuar.'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: const Text(
+                'Você deve aceitar os termos e condições para continuar.'),
+            // Cor de erro adaptável
+            backgroundColor: theme.colorScheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -73,15 +79,19 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
     } else {
+      // Se estiver no primeiro passo, o botão 'Voltar' funciona como o botão de voltar da AppBar
       Navigator.of(context).pop();
     }
   }
 
-
   Widget _getStepContent(int step) {
+    // É importante que os widgets BookingStep1, 2, 3, e 4 também sejam
+    // adaptáveis ao tema em seus próprios arquivos.
     switch (step) {
       case 0:
-        return BookingStep1(bookingType: bookingType, onChanged: (value) => setState(() => bookingType = value));
+        return BookingStep1(
+            bookingType: bookingType,
+            onChanged: (value) => setState(() => bookingType = value));
       case 1:
         return BookingStep2(
           selectedDate: selectedDate,
@@ -109,7 +119,8 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
           paymentMethod: paymentMethod,
           total: _calculateTotal(),
           acceptedTerms: acceptedTerms,
-          onTermsChanged: (value) => setState(() => acceptedTerms = value ?? false),
+          onTermsChanged: (value) =>
+              setState(() => acceptedTerms = value ?? false),
         );
       default:
         return Container();
@@ -118,26 +129,31 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context); // Acessa o tema atual
+
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      // Cor de fundo adaptável
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
-        title: const Text('Reservar Espaço', style: TextStyle(color: Colors.black87)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        // Estilo da AppBar (cor, texto, etc.) virá do appBarTheme global
+        title: const Text('Reservar Espaço'),
         elevation: 1,
+        // A linha inferior da AppBar usa a cor de contorno do tema
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: Colors.grey.shade300, height: 1.0),
+          child: Container(
+              color: theme.colorScheme.outline.withOpacity(0.3), height: 1.0),
         ),
       ),
-    
+
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800),
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-              child: _buildStepperContent(context),
+              // Passa o tema para o método que constrói o conteúdo
+              child: _buildStepperContent(context, theme),
             ),
           ),
         ),
@@ -145,8 +161,7 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
     );
   }
 
-  Widget _buildStepperContent(BuildContext context) {
-    const primaryColor = Color(0xFF4F46E5);
+  Widget _buildStepperContent(BuildContext context, ThemeData theme) {
     final List<String> stepTitles = [
       'Tipo de Reserva',
       'Data e Horário',
@@ -159,58 +174,76 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
       children: [
         Text(
           'Complete os detalhes abaixo para finalizar sua reserva',
-          style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+          // Cor de texto secundária adaptável
+          style: theme.textTheme.bodyLarge
+              ?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7)),
         ),
         const SizedBox(height: 32),
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            // Cor do container adaptável (cor de card ou superfície)
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
+            // Cor da borda adaptável
+            border:
+                Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Detalhes da Reserva', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text('Detalhes da Reserva',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface)),
               const SizedBox(height: 24),
-              _CustomStepperIndicator(currentStep: _currentStep),
+              // O indicador agora recebe o tema para usar suas cores
+              _CustomStepperIndicator(currentStep: _currentStep, theme: theme),
               const SizedBox(height: 24),
               Text(
                 stepTitles[_currentStep],
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16), // Aumentado um pouco
+              // É crucial que os widgets de cada passo (BookingStep1, etc.)
+              // também sejam adaptáveis ao tema em seus próprios arquivos.
               _getStepContent(_currentStep),
               const SizedBox(height: 24),
               Row(
                 children: [
-                  if (_currentStep > 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _previousStep,
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: BorderSide(color: Colors.grey.shade300),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Text('Voltar'),
+                  // O botão Voltar aparece em todos os passos
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _previousStep,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        // Cor da borda adaptável
+                        side: BorderSide(color: theme.colorScheme.outline),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        // Cor do texto adaptável
+                        foregroundColor: theme.colorScheme.onSurface,
                       ),
+                      // Texto do botão muda no primeiro passo
+                      child: Text(_currentStep == 0 ? 'Cancelar' : 'Voltar'),
                     ),
-                  if (_currentStep > 0)
-                    const SizedBox(width: 12),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _nextStep,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
+                        // Cor de fundo e texto adaptáveis
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: theme.colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
                       ),
-                 
                       child: Text(
-                        _currentStep == 3 ? 'Revisar Reserva' : 'Continuar',
+                        _currentStep == 3 ? 'Confirmar Reserva' : 'Continuar',
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -225,33 +258,47 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
   }
 }
 
-
 class _CustomStepperIndicator extends StatelessWidget {
   final int currentStep;
-  const _CustomStepperIndicator({required this.currentStep});
+  final ThemeData theme; // Recebe o tema
+  const _CustomStepperIndicator(
+      {required this.currentStep, required this.theme});
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF4F46E5);
     return Row(
       children: List.generate(4, (index) {
         bool isActive = index <= currentStep;
+        bool isCompleted = index < currentStep;
+
+        // Cores adaptáveis baseadas no estado
+        Color circleColor = isActive
+            ? theme.colorScheme.primary
+            : theme.colorScheme.surfaceVariant;
+        Color textColor = isActive
+            ? theme.colorScheme.onPrimary
+            : theme.colorScheme.onSurfaceVariant;
+        Color lineColor = isCompleted
+            ? theme.colorScheme.primary
+            : theme.colorScheme.surfaceVariant;
+
         return Expanded(
           child: Row(
             children: [
               CircleAvatar(
                 radius: 14,
-                backgroundColor: isActive ? primaryColor : Colors.grey.shade300,
+                backgroundColor: circleColor,
                 child: Text(
                   '${index + 1}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style:
+                      TextStyle(color: textColor, fontWeight: FontWeight.bold),
                 ),
               ),
               if (index < 3)
                 Expanded(
                   child: Container(
                     height: 2,
-                    color: index < currentStep ? primaryColor : Colors.grey.shade300,
+                    color: lineColor,
                   ),
                 )
             ],
@@ -261,4 +308,3 @@ class _CustomStepperIndicator extends StatelessWidget {
     );
   }
 }
-
