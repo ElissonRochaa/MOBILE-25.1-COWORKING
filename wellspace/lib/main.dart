@@ -1,3 +1,5 @@
+import 'package:Wellspace/viewmodels/ReservaViewModel.dart';
+import 'package:Wellspace/views/MinhasReservas.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -16,7 +18,7 @@ import 'package:Wellspace/views/CadastroSalaPage.dart';
 import 'package:Wellspace/views/ProfilePage.dart';
 import 'package:Wellspace/views/EditProfilePage.dart';
 import 'package:Wellspace/views/EspacoPage.dart';
-import 'package:Wellspace/views/SuportePage.dart'; 
+import 'package:Wellspace/views/SuportePage.dart';
 import 'package:Wellspace/views/SplashPage.dart';
 import 'package:Wellspace/views/AlugarPage.dart';
 import 'package:Wellspace/views/EsqueciSenhaPage.dart';
@@ -52,14 +54,13 @@ class MyApp extends StatelessWidget {
         elevation: 0,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-        )
-      ),
-       inputDecorationTheme: InputDecorationTheme(
+          style: ElevatedButton.styleFrom(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+      )),
+      inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -89,6 +90,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SalaListViewModel()),
         ChangeNotifierProvider(create: (_) => UsuarioDetailViewModel()),
         ChangeNotifierProvider(create: (_) => PasswordRecoveryViewModel()),
+        ChangeNotifierProvider(create: (_) => ReservaViewModel()),
       ],
       child: Consumer<ThemeNotifier>(
         builder: (context, themeNotifier, child) {
@@ -119,6 +121,7 @@ class MyApp extends StatelessWidget {
               '/espacos': (context) => const EspacosPage(),
               '/suporte': (context) => const SuportePage(),
               '/forgot-password': (context) => const ForgotPasswordForm(),
+              '/minhas-reservas': (context) => const MinhasReservasScreen(),
             },
             onGenerateRoute: (settings) {
               if (settings.name == '/alugar') {
@@ -145,7 +148,6 @@ class MyApp extends StatelessWidget {
 
                 if (token != null && token.isNotEmpty) {
                   return MaterialPageRoute(
-              
                     builder: (context) => ResetPasswordScreen(token: token!),
                   );
                 } else {
