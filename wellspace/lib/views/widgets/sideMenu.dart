@@ -185,7 +185,7 @@ class _SideMenuState extends State<SideMenu> {
             title: const Text('Minhas Reservas'),
             onTap: () {
               Navigator.pop(context);
-              // Navigator.pushReplacementNamed(context, '/minhasReservas');
+              Navigator.pushReplacementNamed(context, '/minhas-reservas');
             },
           ),
           ListTile(
