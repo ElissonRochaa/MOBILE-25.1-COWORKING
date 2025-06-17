@@ -6,22 +6,18 @@ class BookingStep2 extends StatelessWidget {
   final DateTime selectedDate;
   final TimeOfDay startTime;
   final TimeOfDay endTime;
-  final int numberOfPeople;
   final ValueChanged<DateTime> onDateChanged;
   final ValueChanged<TimeOfDay> onStartTimeChanged;
   final ValueChanged<TimeOfDay> onEndTimeChanged;
-  final ValueChanged<int> onPeopleChanged;
 
   const BookingStep2({
     super.key,
     required this.selectedDate,
     required this.startTime,
     required this.endTime,
-    required this.numberOfPeople,
     required this.onDateChanged,
     required this.onStartTimeChanged,
     required this.onEndTimeChanged,
-    required this.onPeopleChanged,
   });
 
   String _formatDate(DateTime date) {
@@ -157,35 +153,6 @@ class BookingStep2 extends StatelessWidget {
             );
           }).toList(),
         ),
-        const SizedBox(height: 24),
-        Text('Número de Pessoas',
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.remove_circle_outline),
-              onPressed: () => (numberOfPeople > 1)
-                  ? onPeopleChanged(numberOfPeople - 1)
-                  : null,
-              color: (numberOfPeople > 1)
-                  ? theme.colorScheme.onSurface.withOpacity(0.7)
-                  : theme.colorScheme.onSurface.withOpacity(0.3),
-            ),
-            const SizedBox(width: 16),
-            Text('$numberOfPeople',
-                style: theme.textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(width: 16),
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              onPressed: () => onPeopleChanged(numberOfPeople + 1),
-              color: theme.colorScheme.primary,
-            ),
-          ],
-        )
       ],
     );
   }
