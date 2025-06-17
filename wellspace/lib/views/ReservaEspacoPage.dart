@@ -21,7 +21,6 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
   DateTime selectedDate = DateTime.now();
   TimeOfDay startTime = const TimeOfDay(hour: 9, minute: 0);
   TimeOfDay endTime = const TimeOfDay(hour: 18, minute: 0);
-  int numberOfPeople = 1;
   String paymentMethod = 'credit';
   final paymentFormKey = GlobalKey<FormState>();
   bool acceptedTerms = false;
@@ -55,7 +54,6 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
               selectedDate: selectedDate,
               startTime: startTime,
               endTime: endTime,
-              numberOfPeople: numberOfPeople,
               total: _calculateTotal(),
             ),
           ),
@@ -92,11 +90,9 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
           selectedDate: selectedDate,
           startTime: startTime,
           endTime: endTime,
-          numberOfPeople: numberOfPeople,
           onDateChanged: (date) => setState(() => selectedDate = date),
           onStartTimeChanged: (time) => setState(() => startTime = time),
           onEndTimeChanged: (time) => setState(() => endTime = time),
-          onPeopleChanged: (count) => setState(() => numberOfPeople = count),
         );
       case 2:
         return BookingStep3(
@@ -110,7 +106,6 @@ class _ReservaStepperScreenState extends State<ReservaStepperScreen> {
           selectedDate: selectedDate,
           startTime: startTime,
           endTime: endTime,
-          numberOfPeople: numberOfPeople,
           paymentMethod: paymentMethod,
           total: _calculateTotal(),
           acceptedTerms: acceptedTerms,
