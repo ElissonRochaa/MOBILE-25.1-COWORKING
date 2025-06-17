@@ -161,31 +161,6 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                     : null,
                 onSaved: (value) => viewModel.descricao = value ?? '',
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: 'Disponibilidade da Sala',
-                  border: OutlineInputBorder(),
-                  helperText: 'Selecione o status de disponibilidade',
-                ),
-                value: viewModel.disponibilidadeSala.isNotEmpty
-                    ? viewModel.disponibilidadeSala
-                    : null,
-                items: ['DISPONIVEL', 'INDISPONIVEL', 'RESERVADA']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      viewModel.disponibilidadeSala = value;
-                    });
-                  }
-                },
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Selecione a disponibilidade'
-                    : null,
-                onSaved: (value) => viewModel.disponibilidadeSala = value ?? '',
-              ),
               const SizedBox(height: 32),
               const Text(
                 'Preços e Horários',
