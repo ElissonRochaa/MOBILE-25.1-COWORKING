@@ -8,7 +8,6 @@ class TelaConfirmacaoReserva extends StatelessWidget {
   final DateTime selectedDate;
   final TimeOfDay startTime;
   final TimeOfDay endTime;
-  final int numberOfPeople;
   final double total;
 
   const TelaConfirmacaoReserva({
@@ -17,7 +16,6 @@ class TelaConfirmacaoReserva extends StatelessWidget {
     required this.selectedDate,
     required this.startTime,
     required this.endTime,
-    required this.numberOfPeople,
     required this.total,
   });
 
@@ -51,7 +49,6 @@ class TelaConfirmacaoReserva extends StatelessWidget {
               date: selectedDate,
               startTime: startTime,
               endTime: endTime,
-              people: numberOfPeople,
               total: total,
             ),
           ),
@@ -67,7 +64,8 @@ class TelaConfirmacaoReserva extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   side: BorderSide(color: Colors.grey.shade300),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
                 child: const Text('Voltar'),
               ),
@@ -80,7 +78,8 @@ class TelaConfirmacaoReserva extends StatelessWidget {
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
                 child: const Text('Confirmar Reserva'),
               ),
@@ -97,7 +96,6 @@ class _ResumoReservaCard extends StatelessWidget {
   final DateTime date;
   final TimeOfDay startTime;
   final TimeOfDay endTime;
-  final int people;
   final double total;
 
   const _ResumoReservaCard({
@@ -105,7 +103,6 @@ class _ResumoReservaCard extends StatelessWidget {
     required this.date,
     required this.startTime,
     required this.endTime,
-    required this.people,
     required this.total,
   });
 
@@ -116,7 +113,7 @@ class _ResumoReservaCard extends StatelessWidget {
     final startMinutes = startTime.hour * 60 + startTime.minute;
     final endMinutes = endTime.hour * 60 + endTime.minute;
     final durationInHours = (endMinutes - startMinutes) / 60;
-    
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -127,12 +124,15 @@ class _ResumoReservaCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Resumo da Reserva', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          Text('Resumo da Reserva',
+              style: theme.textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           Row(
             children: [
               Container(
-                width: 60, height: 60,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(8),
@@ -144,8 +144,11 @@ class _ResumoReservaCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(sala.nomeSala, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    const Text("Av. Paulista, 1000, São Paulo", style: TextStyle(color: Colors.grey)),
+                    Text(sala.nomeSala,
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    const Text("Av. Paulista, 1000, São Paulo",
+                        style: TextStyle(color: Colors.grey)),
                   ],
                 ),
               )
@@ -153,24 +156,35 @@ class _ResumoReservaCard extends StatelessWidget {
           ),
           const Divider(height: 32),
           _buildSummaryRow('Data:', DateFormat('dd/MM/yyyy').format(date)),
-          _buildSummaryRow('Horário:', '${startTime.format(context)} - ${endTime.format(context)}'),
-          _buildSummaryRow('Duração:', '${durationInHours.toStringAsFixed(0)} hora(s)'),
-          _buildSummaryRow('Pessoas:', '$people'),
+          _buildSummaryRow('Horário:',
+              '${startTime.format(context)} - ${endTime.format(context)}'),
+          _buildSummaryRow(
+              'Duração:', '${durationInHours.toStringAsFixed(0)} hora(s)'),
           const Divider(height: 32),
-          _buildSummaryRow('Preço por hora:', 'R\$ ${sala.precoHora.toStringAsFixed(2)}'),
-          _buildSummaryRow('Duração:', '${durationInHours.toStringAsFixed(0)} hora(s)'),
+          _buildSummaryRow(
+              'Preço por hora:', 'R\$ ${sala.precoHora.toStringAsFixed(2)}'),
+          _buildSummaryRow(
+              'Duração:', '${durationInHours.toStringAsFixed(0)} hora(s)'),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Total:', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              Text('R\$ ${total.toStringAsFixed(2)}', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: primaryColor)),
+              Text('Total:',
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+              Text('R\$ ${total.toStringAsFixed(2)}',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold, color: primaryColor)),
             ],
           ),
           const SizedBox(height: 24),
-          _buildInfoChip(Icons.info_outline, 'Sua reserva será confirmada imediatamente após o pagamento.', Colors.blue.shade50),
+          _buildInfoChip(
+              Icons.info_outline,
+              'Sua reserva será confirmada imediatamente após o pagamento.',
+              Colors.blue.shade50),
           const SizedBox(height: 12),
-          _buildInfoChip(Icons.shield_outlined, 'Pagamento seguro e criptografado', Colors.green.shade50),
+          _buildInfoChip(Icons.shield_outlined,
+              'Pagamento seguro e criptografado', Colors.green.shade50),
         ],
       ),
     );
@@ -200,7 +214,9 @@ class _ResumoReservaCard extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: Colors.grey.shade700),
           const SizedBox(width: 8),
-          Expanded(child: Text(text, style: TextStyle(fontSize: 12, color: Colors.grey.shade700))),
+          Expanded(
+              child: Text(text,
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700))),
         ],
       ),
     );
