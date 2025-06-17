@@ -14,6 +14,7 @@ class SalaCard extends StatefulWidget {
 class _SalaCardState extends State<SalaCard> {
   String? imageUrl;
   bool isLoading = true;
+  bool isFavorited = false;
 
   @override
   void initState() {
@@ -118,7 +119,8 @@ class _SalaCardState extends State<SalaCard> {
                 color: Colors.grey[300],
                 child: isLoading
                     ? const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2.5))
+                        child: CircularProgressIndicator(strokeWidth: 2.5),
+                      )
                     : imageUrl != null && imageUrl!.isNotEmpty
                         ? Image.network(
                             imageUrl!,
@@ -187,6 +189,23 @@ class _SalaCardState extends State<SalaCard> {
                     ),
                   ),
                 ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: Icon(
+                    isFavorited ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorited ? Colors.red : Colors.white,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      isFavorited = !isFavorited;
+                    });
+                    print(
+                        '[SalaCard] Sala "${widget.sala.nomeSala}" favoritada: $isFavorited');
+                  },
+                ),
+              ),
             ],
           ),
           Padding(
@@ -261,27 +280,31 @@ class _SalaCardState extends State<SalaCard> {
                           Navigator.pushNamed(context, '/alugar',
                               arguments: widget.sala.id);
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
                               content: Text(
-                                  'ID da sala indisponível para ver detalhes.')));
+                                  'ID da sala indisponível para ver detalhes.'),
+                            ),
+                          );
                           print(
                               '[SalaCard] Botão "Ver Detalhes": ID da sala é nulo ou vazio.');
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          textStyle: const TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w600)),
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        textStyle: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
                       child: const Text('Ver Detalhes'),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
