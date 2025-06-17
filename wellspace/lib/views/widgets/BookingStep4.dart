@@ -8,7 +8,6 @@ class BookingStep4 extends StatelessWidget {
   final DateTime selectedDate;
   final TimeOfDay startTime;
   final TimeOfDay endTime;
-  final int numberOfPeople;
   final String paymentMethod;
   final double total;
   final bool acceptedTerms;
@@ -20,7 +19,6 @@ class BookingStep4 extends StatelessWidget {
     required this.selectedDate,
     required this.startTime,
     required this.endTime,
-    required this.numberOfPeople,
     required this.paymentMethod,
     required this.total,
     required this.acceptedTerms,
@@ -65,7 +63,6 @@ class BookingStep4 extends StatelessWidget {
                   '${_formatTime(context, startTime)} - ${_formatTime(context, endTime)}'),
               _buildReviewRow(context, 'Duração:',
                   '${durationInHours.toStringAsFixed(1).replaceAll('.0', '')} hora(s)'),
-              _buildReviewRow(context, 'Pessoas:', '$numberOfPeople'),
               _buildReviewRow(context, 'Método de Pagamento:',
                   paymentMethod == 'credit' ? 'Cartão de Crédito' : 'Pix'),
               const Divider(height: 24),
