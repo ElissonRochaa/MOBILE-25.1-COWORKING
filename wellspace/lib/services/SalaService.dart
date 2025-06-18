@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import '../models/Sala.dart';
+import '../models/Sala.dart'; 
 
 class SalaService {
   static const String _baseUrl = 'https://wellspace-app.onrender.com';
@@ -19,7 +19,7 @@ class SalaService {
   static bool _isSuccess(int statusCode) =>
       statusCode == 200 || statusCode == 201 || statusCode == 204;
 
-  static Future<Sala?> cadastrarSala(Sala sala) async {
+  static Future<Sala?> cadastrarSala(Sala sala) async { //
     try {
       final token = await _getTokenOrThrow();
 
@@ -29,14 +29,14 @@ class SalaService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: json.encode(sala.toJson()),
+        body: json.encode(sala.toJson()), //
       );
 
       print('[SalaService] cadastrarSala status: ${response.statusCode}');
 
       if (_isSuccess(response.statusCode)) {
         print('[SalaService] Sala cadastrada com sucesso.');
-        return Sala.fromJson(json.decode(response.body));
+        return Sala.fromJson(json.decode(response.body)); //
       } else {
         print(
             '[SalaService] Erro ao cadastrar sala: ${response.statusCode} – ${response.body}');
@@ -48,7 +48,7 @@ class SalaService {
     }
   }
 
-  static Future<List<Sala>> listarSalas() async {
+  static Future<List<Sala>> listarSalas() async { //
     try {
       final token = await _getTokenOrThrow();
 
@@ -63,7 +63,7 @@ class SalaService {
 
       if (_isSuccess(response.statusCode)) {
         final List<dynamic> data = json.decode(response.body);
-        return data.map((json) => Sala.fromJson(json)).toList();
+        return data.map((json) => Sala.fromJson(json)).toList(); //
       } else {
         print('[SalaService] Erro ao listar salas: ${response.statusCode}');
         return [];
@@ -74,7 +74,7 @@ class SalaService {
     }
   }
 
-  static Future<Sala?> buscarSalaPorId(String id) async {
+  static Future<Sala?> buscarSalaPorId(String id) async { //
     try {
       final token = await _getTokenOrThrow();
 
@@ -91,7 +91,7 @@ class SalaService {
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
           print('[SalaService] Sala encontrada com sucesso.');
-          return Sala.fromJson(json.decode(response.body));
+          return Sala.fromJson(json.decode(response.body)); //
         } else {
           print(
               '[SalaService] Sala encontrada (200), mas corpo da resposta vazio.');
@@ -153,6 +153,28 @@ class SalaService {
     } catch (e) {
       print('[SalaService] Exceção ao alterar disponibilidade: $e');
       return false;
+    }
+  }
+
+  static Future<List<Sala>> listarSalasPorUsuarioId(String usuarioId) async {
+    try {
+      final token = await _getTokenOrThrow();
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/salas/usuario/$usuarioId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (_isSuccess(response.statusCode)) {
+        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+        return data.map((json) => Sala.fromJson(json)).toList(); //
+      } else {
+        return [];
+      }
+    } catch (e) {
+      return [];
     }
   }
 }
