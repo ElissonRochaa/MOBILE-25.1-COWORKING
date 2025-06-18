@@ -88,18 +88,17 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeNotifier()), //
-        ChangeNotifierProvider(create: (_) => SalaDetailViewModel()), //
-        ChangeNotifierProvider(create: (_) => SalaImagemViewModel()), //
-        ChangeNotifierProvider(create: (_) => SalaListViewModel()), //
-        ChangeNotifierProvider(create: (_) => UsuarioDetailViewModel()), //
-        ChangeNotifierProvider(create: (_) => PasswordRecoveryViewModel()), //
-        ChangeNotifierProvider(create: (_) => ReservaViewModel()), //
-        // Novos ViewModels para Meus Espaços
+        ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+        ChangeNotifierProvider(create: (_) => SalaDetailViewModel()), 
+        ChangeNotifierProvider(create: (_) => SalaImagemViewModel()), 
+        ChangeNotifierProvider(create: (_) => SalaListViewModel()), 
+        ChangeNotifierProvider(create: (_) => UsuarioDetailViewModel()), 
+        ChangeNotifierProvider(create: (_) => PasswordRecoveryViewModel()), 
+        ChangeNotifierProvider(create: (_) => ReservaViewModel()), 
         ChangeNotifierProvider(create: (_) => MinhasSalasViewModel()),
         ChangeNotifierProvider(create: (_) => ReservasRecebidasViewModel()),
       ],
-      child: Consumer<ThemeNotifier>( //
+      child: Consumer<ThemeNotifier>( 
         builder: (context, themeNotifier, child) {
           return MaterialApp(
             title: 'Wellspace',
@@ -118,25 +117,25 @@ class MyApp extends StatelessWidget {
             locale: const Locale('pt', 'BR'),
             initialRoute: '/',
             routes: {
-              '/': (context) => const SplashPage(), //
-              '/login': (context) => const LoginPage(), //
-              '/cadastro': (context) => CadastroPage(), //
-              '/home': (context) => const HomePage(), //
-              '/cadastroSala': (context) => CadastroSalaPage(), //
-              '/Perfil': (context) => const ProfilePage(), //
-              '/editar-perfil': (context) => const EdiProfilePage(), //
-              '/espacos': (context) => const EspacosPage(), //
-              '/suporte': (context) => const SuportePage(), //
-              '/forgot-password': (context) => const ForgotPasswordForm(), //
-              '/minhas-reservas': (context) => const MinhasReservasScreen(), //
-              '/meus-espacos': (context) => const MeusEspacosPage(), // Nova rota
+              '/': (context) => const SplashPage(), 
+              '/login': (context) => const LoginPage(), 
+              '/cadastro': (context) => CadastroPage(), 
+              '/home': (context) => const HomePage(), 
+              '/cadastroSala': (context) => CadastroSalaPage(), 
+              '/Perfil': (context) => const ProfilePage(), 
+              '/editar-perfil': (context) => const EdiProfilePage(), 
+              '/espacos': (context) => const EspacosPage(), 
+              '/suporte': (context) => const SuportePage(), 
+              '/forgot-password': (context) => const ForgotPasswordForm(), 
+              '/minhas-reservas': (context) => const MinhasReservasScreen(), 
+              '/meus-espacos': (context) => const MeusEspacosPage(), 
             },
             onGenerateRoute: (settings) {
               if (settings.name == '/alugar') {
                 final salaId = settings.arguments as String?;
                 if (salaId != null && salaId.isNotEmpty) {
                   return MaterialPageRoute(
-                    builder: (context) => Alugapage(salaId: salaId), //
+                    builder: (context) => Alugapage(salaId: salaId), 
                   );
                 } else {
                   return _errorRoute(
@@ -156,7 +155,7 @@ class MyApp extends StatelessWidget {
 
                 if (token != null && token.isNotEmpty) {
                   return MaterialPageRoute(
-                    builder: (context) => ResetPasswordScreen(token: token!), //
+                    builder: (context) => ResetPasswordScreen(token: token!), 
                   );
                 } else {
                   return _errorRoute(

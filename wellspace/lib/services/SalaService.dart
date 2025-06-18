@@ -161,7 +161,7 @@ class SalaService {
       final token = await _getTokenOrThrow();
 
       final response = await http.get(
-        Uri.parse('$_baseUrl/api/salas/usuario/$usuarioId'),
+        Uri.parse('$_baseUrl/salas/usuario/$usuarioId'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -169,7 +169,7 @@ class SalaService {
 
       if (_isSuccess(response.statusCode)) {
         final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
-        return data.map((json) => Sala.fromJson(json)).toList(); //
+        return data.map((json) => Sala.fromJson(json)).toList(); 
       } else {
         return [];
       }
