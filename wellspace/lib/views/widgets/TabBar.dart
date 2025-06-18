@@ -3,15 +3,18 @@ import 'package:flutter/material.dart';
 class TabSelector extends StatelessWidget {
   final int selectedTab;
   final Function(int) onTabChanged;
+  final List<String> tabs; // ESTA LINHA É CRÍTICA!
 
-  const TabSelector(
-      {super.key, required this.selectedTab, required this.onTabChanged});
+  const TabSelector({
+    super.key,
+    required this.selectedTab,
+    required this.onTabChanged,
+    required this.tabs, // ESTA LINHA É CRÍTICA!
+  });
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final bool isDarkMode = theme.brightness == Brightness.dark;
-    final tabs = ['Informações', 'Verificação', 'Favoritos', 'Reservas'];
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
