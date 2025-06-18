@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import '../models/Sala.dart'; 
+import '../models/Sala.dart';
 
 class SalaService {
   static const String _baseUrl = 'https://wellspace-app.onrender.com';
@@ -19,7 +19,7 @@ class SalaService {
   static bool _isSuccess(int statusCode) =>
       statusCode == 200 || statusCode == 201 || statusCode == 204;
 
-  static Future<Sala?> cadastrarSala(Sala sala) async { //
+  static Future<Sala?> cadastrarSala(Sala sala) async {
     try {
       final token = await _getTokenOrThrow();
 
@@ -29,14 +29,14 @@ class SalaService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: json.encode(sala.toJson()), //
+        body: json.encode(sala.toJson()),
       );
 
       print('[SalaService] cadastrarSala status: ${response.statusCode}');
 
       if (_isSuccess(response.statusCode)) {
         print('[SalaService] Sala cadastrada com sucesso.');
-        return Sala.fromJson(json.decode(response.body)); //
+        return Sala.fromJson(json.decode(response.body));
       } else {
         print(
             '[SalaService] Erro ao cadastrar sala: ${response.statusCode} – ${response.body}');
@@ -48,7 +48,7 @@ class SalaService {
     }
   }
 
-  static Future<List<Sala>> listarSalas() async { //
+  static Future<List<Sala>> listarSalas() async {
     try {
       final token = await _getTokenOrThrow();
 
@@ -74,7 +74,7 @@ class SalaService {
     }
   }
 
-  static Future<Sala?> buscarSalaPorId(String id) async { //
+  static Future<Sala?> buscarSalaPorId(String id) async {
     try {
       final token = await _getTokenOrThrow();
 
@@ -161,7 +161,7 @@ class SalaService {
       final token = await _getTokenOrThrow();
 
       final response = await http.get(
-        Uri.parse('$_baseUrl/salas/usuario/$usuarioId'),
+        Uri.parse('$_baseUrl/api/salas/usuario/$usuarioId'),
         headers: {
           'Authorization': 'Bearer $token',
         },
