@@ -63,7 +63,7 @@ class SalaService {
 
       if (_isSuccess(response.statusCode)) {
         final List<dynamic> data = json.decode(response.body);
-        return data.map((json) => Sala.fromJson(json)).toList();
+        return data.map((json) => Sala.fromJson(json)).toList(); //
       } else {
         print('[SalaService] Erro ao listar salas: ${response.statusCode}');
         return [];
@@ -91,7 +91,7 @@ class SalaService {
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
           print('[SalaService] Sala encontrada com sucesso.');
-          return Sala.fromJson(json.decode(response.body));
+          return Sala.fromJson(json.decode(response.body)); //
         } else {
           print(
               '[SalaService] Sala encontrada (200), mas corpo da resposta vazio.');
@@ -153,6 +153,28 @@ class SalaService {
     } catch (e) {
       print('[SalaService] Exceção ao alterar disponibilidade: $e');
       return false;
+    }
+  }
+
+  static Future<List<Sala>> listarSalasPorUsuarioId(String usuarioId) async {
+    try {
+      final token = await _getTokenOrThrow();
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/salas/usuario/$usuarioId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (_isSuccess(response.statusCode)) {
+        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+        return data.map((json) => Sala.fromJson(json)).toList(); 
+      } else {
+        return [];
+      }
+    } catch (e) {
+      return [];
     }
   }
 }

@@ -126,6 +126,8 @@ class _SideMenuState extends State<SideMenu> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isLocador = _usuario?.usuarioRole == 'LOCADOR';
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -150,8 +152,6 @@ class _SideMenuState extends State<SideMenu> {
                         ? 'Mudar para tema claro'
                         : 'Mudar para tema escuro',
                     onPressed: () {
-                      print(
-                          "SideMenu: Botão de tema pressionado. Chamando toggleTheme().");
                       Provider.of<ThemeNotifier>(context, listen: false)
                           .toggleTheme();
                     },
@@ -188,6 +188,15 @@ class _SideMenuState extends State<SideMenu> {
               Navigator.pushReplacementNamed(context, '/minhas-reservas');
             },
           ),
+          if (isLocador)
+            ListTile(
+              leading: const Icon(Icons.business_center),
+              title: const Text('Meus Espaços'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushReplacementNamed(context, '/meus-espacos');
+              },
+            ),
           ListTile(
             leading: const Icon(Icons.add_business),
             title: const Text('Cadastrar Sala'),
@@ -209,7 +218,6 @@ class _SideMenuState extends State<SideMenu> {
             title: const Text('Configurações'),
             onTap: () {
               Navigator.pop(context);
-              // Navigator.pushReplacementNamed(context, '/configuracoes');
             },
           ),
           ListTile(

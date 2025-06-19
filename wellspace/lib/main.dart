@@ -1,28 +1,32 @@
-import 'package:Wellspace/viewmodels/ReservaViewModel.dart';
-import 'package:Wellspace/views/MinhasReservas.dart';
+import 'package:Wellspace/viewmodels/ReservaViewModel.dart'; 
+import 'package:Wellspace/views/MinhasReservas.dart'; 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:Wellspace/viewmodels/SalaDetailViewModel.dart';
-import 'package:Wellspace/viewmodels/SalaImagemViewModel.dart';
-import 'package:Wellspace/viewmodels/SalaListViewModel.dart';
-import 'package:Wellspace/viewmodels/UsuarioDetailViewModel.dart';
-import 'package:Wellspace/viewmodels/PasswordRecoveryViewModel.dart';
-import 'package:Wellspace/views/widgets/ThemeNotifer.dart';
-import 'package:Wellspace/views/LoginPage.dart';
-import 'package:Wellspace/views/CadastroPage.dart';
-import 'package:Wellspace/views/HomePage.dart';
-import 'package:Wellspace/views/CadastroSalaPage.dart';
-import 'package:Wellspace/views/ProfilePage.dart';
-import 'package:Wellspace/views/EditProfilePage.dart';
-import 'package:Wellspace/views/EspacoPage.dart';
-import 'package:Wellspace/views/SuportePage.dart';
-import 'package:Wellspace/views/SplashPage.dart';
-import 'package:Wellspace/views/AlugarPage.dart';
-import 'package:Wellspace/views/EsqueciSenhaPage.dart';
-import 'package:Wellspace/views/RecuperacaoSenhaPage.dart';
+import 'package:Wellspace/viewmodels/SalaDetailViewModel.dart'; 
+import 'package:Wellspace/viewmodels/SalaImagemViewModel.dart'; 
+import 'package:Wellspace/viewmodels/SalaListViewModel.dart'; 
+import 'package:Wellspace/viewmodels/UsuarioDetailViewModel.dart'; 
+import 'package:Wellspace/viewmodels/PasswordRecoveryViewModel.dart'; 
+import 'package:Wellspace/views/widgets/ThemeNotifer.dart'; 
+import 'package:Wellspace/views/LoginPage.dart'; 
+import 'package:Wellspace/views/CadastroPage.dart'; 
+import 'package:Wellspace/views/HomePage.dart'; 
+import 'package:Wellspace/views/CadastroSalaPage.dart'; 
+import 'package:Wellspace/views/ProfilePage.dart'; 
+import 'package:Wellspace/views/EditProfilePage.dart'; 
+import 'package:Wellspace/views/EspacoPage.dart'; 
+import 'package:Wellspace/views/SuportePage.dart'; 
+import 'package:Wellspace/views/SplashPage.dart'; 
+import 'package:Wellspace/views/AlugarPage.dart'; 
+import 'package:Wellspace/views/EsqueciSenhaPage.dart'; 
+import 'package:Wellspace/views/RecuperacaoSenhaPage.dart'; 
+import 'package:Wellspace/views/MeusEspacosPage.dart';
+import 'package:Wellspace/viewmodels/MinhasSalasViewModel.dart';
+import 'package:Wellspace/viewmodels/ReservasRecebidasViewModel.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,14 +89,16 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
-        ChangeNotifierProvider(create: (_) => SalaDetailViewModel()),
-        ChangeNotifierProvider(create: (_) => SalaImagemViewModel()),
-        ChangeNotifierProvider(create: (_) => SalaListViewModel()),
-        ChangeNotifierProvider(create: (_) => UsuarioDetailViewModel()),
-        ChangeNotifierProvider(create: (_) => PasswordRecoveryViewModel()),
-        ChangeNotifierProvider(create: (_) => ReservaViewModel()),
+        ChangeNotifierProvider(create: (_) => SalaDetailViewModel()), 
+        ChangeNotifierProvider(create: (_) => SalaImagemViewModel()), 
+        ChangeNotifierProvider(create: (_) => SalaListViewModel()), 
+        ChangeNotifierProvider(create: (_) => UsuarioDetailViewModel()), 
+        ChangeNotifierProvider(create: (_) => PasswordRecoveryViewModel()), 
+        ChangeNotifierProvider(create: (_) => ReservaViewModel()), 
+        ChangeNotifierProvider(create: (_) => MinhasSalasViewModel()),
+        ChangeNotifierProvider(create: (_) => ReservasRecebidasViewModel()),
       ],
-      child: Consumer<ThemeNotifier>(
+      child: Consumer<ThemeNotifier>( 
         builder: (context, themeNotifier, child) {
           return MaterialApp(
             title: 'Wellspace',
@@ -111,24 +117,25 @@ class MyApp extends StatelessWidget {
             locale: const Locale('pt', 'BR'),
             initialRoute: '/',
             routes: {
-              '/': (context) => const SplashPage(),
-              '/login': (context) => const LoginPage(),
-              '/cadastro': (context) => CadastroPage(),
-              '/home': (context) => const HomePage(),
-              '/cadastroSala': (context) => CadastroSalaPage(),
-              '/Perfil': (context) => const ProfilePage(),
-              '/editar-perfil': (context) => const EdiProfilePage(),
-              '/espacos': (context) => const EspacosPage(),
-              '/suporte': (context) => const SuportePage(),
-              '/forgot-password': (context) => const ForgotPasswordForm(),
-              '/minhas-reservas': (context) => const MinhasReservasScreen(),
+              '/': (context) => const SplashPage(), 
+              '/login': (context) => const LoginPage(), 
+              '/cadastro': (context) => CadastroPage(), 
+              '/home': (context) => const HomePage(), 
+              '/cadastroSala': (context) => CadastroSalaPage(), 
+              '/Perfil': (context) => const ProfilePage(), 
+              '/editar-perfil': (context) => const EdiProfilePage(), 
+              '/espacos': (context) => const EspacosPage(), 
+              '/suporte': (context) => const SuportePage(), 
+              '/forgot-password': (context) => const ForgotPasswordForm(), 
+              '/minhas-reservas': (context) => const MinhasReservasScreen(), 
+              '/meus-espacos': (context) => const MeusEspacosPage(), 
             },
             onGenerateRoute: (settings) {
               if (settings.name == '/alugar') {
                 final salaId = settings.arguments as String?;
                 if (salaId != null && salaId.isNotEmpty) {
                   return MaterialPageRoute(
-                    builder: (context) => Alugapage(salaId: salaId),
+                    builder: (context) => Alugapage(salaId: salaId), 
                   );
                 } else {
                   return _errorRoute(
@@ -148,7 +155,7 @@ class MyApp extends StatelessWidget {
 
                 if (token != null && token.isNotEmpty) {
                   return MaterialPageRoute(
-                    builder: (context) => ResetPasswordScreen(token: token!),
+                    builder: (context) => ResetPasswordScreen(token: token!), 
                   );
                 } else {
                   return _errorRoute(

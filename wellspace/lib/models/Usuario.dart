@@ -5,6 +5,7 @@ class Usuario {
   DateTime? dataNascimento;
   String fotoPerfil;
   bool integridade;
+  String? usuarioRole; 
 
   Usuario({
     required this.nome,
@@ -13,6 +14,7 @@ class Usuario {
     required this.dataNascimento,
     required this.fotoPerfil,
     this.integridade = false,
+    this.usuarioRole, 
   });
 
   Map<String, dynamic> toJson() {
@@ -23,6 +25,7 @@ class Usuario {
       'dataNascimento': dataNascimento?.toIso8601String(),
       'fotoPerfil': fotoPerfil,
       'integridade': integridade,
+      'usuarioRole': usuarioRole, 
     };
   }
 
@@ -36,6 +39,7 @@ class Usuario {
           : null,
       fotoPerfil: json['fotoPerfil'] ?? '',
       integridade: json['integridade'] ?? false,
+      usuarioRole: json['usuarioRole'], 
     );
   }
 }

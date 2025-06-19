@@ -127,7 +127,7 @@ class UsuarioService {
     final usuarioId = await obterUsuarioId();
 
     if (token == null || usuarioId == null) {
-      throw Exception('Token ou usuárioId não encontrados. Faça login novamente.');
+      throw Exception('Token ou usuarioId não encontrados. Faça login novamente.');
     }
 
     try {

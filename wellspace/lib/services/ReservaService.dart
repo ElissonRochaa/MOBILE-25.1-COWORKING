@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'package:Wellspace/models/Reserva.dart';
+import 'package:Wellspace/models/Reserva.dart'; //
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import '../services/UsuarioService.dart';
 
 class ReservaService {
-  static const String _baseUrl = 'https://wellspace-app.onrender.com/api';
+  static const String _baseUrl = 'https://wellspace-app.onrender.com';
   static final _storage = const FlutterSecureStorage();
 
   static Future<String> _getTokenOrThrow() async {
@@ -23,7 +24,7 @@ class ReservaService {
     try {
       final token = await _getTokenOrThrow();
       final response = await http.get(
-        Uri.parse('$_baseUrl/reservas/locatario/$usuarioId'),
+        Uri.parse('$_baseUrl/api/reservas/locatario/$usuarioId'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -50,7 +51,7 @@ class ReservaService {
     try {
       final token = await _getTokenOrThrow();
       final response = await http.post(
-        Uri.parse('$_baseUrl/reservas'),
+        Uri.parse('$_baseUrl/api/reservas'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -62,7 +63,8 @@ class ReservaService {
 
       if (_isSuccess(response.statusCode)) {
         print('[ReservaService] Reserva criada com sucesso.');
-        return Reserva.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+        return Reserva.fromJson(
+            json.decode(utf8.decode(response.bodyBytes))); //
       } else {
         print('[ReservaService] Erro ao criar reserva: ${response.body}');
         return null;
@@ -77,7 +79,7 @@ class ReservaService {
     try {
       final token = await _getTokenOrThrow();
       final response = await http.delete(
-        Uri.parse('$_baseUrl/reservas/$reservaId'),
+        Uri.parse('$_baseUrl/api/reservas/$reservaId'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -88,6 +90,34 @@ class ReservaService {
     } catch (e) {
       print('[ReservaService] Exceção em deletarReserva: $e');
       return false;
+    }
+  }
+
+  static Future<List<Reserva>> listarReservasParaLocador(
+      String usuarioId) async {
+    final token = await UsuarioService.obterToken();
+    if (token == null) {
+      throw Exception('Usuário não autenticado.');
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/api/reservas/locador/$usuarioId'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+        return data.map((json) => Reserva.fromJson(json)).toList();
+      } else {
+        throw Exception('Falha ao carregar reservas recebidas.');
+      }
+    } catch (e) {
+      print('Erro ao buscar reservas do locador: $e');
+      rethrow;
     }
   }
 }
