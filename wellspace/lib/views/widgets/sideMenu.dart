@@ -1,8 +1,8 @@
-import 'package:Wellspace/views/widgets/ThemeNotifer.dart'; 
+import 'package:Wellspace/views/widgets/ThemeNotifer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Wellspace/models/Usuario.dart'; 
-import 'package:Wellspace/services/UsuarioService.dart'; 
+import 'package:Wellspace/models/Usuario.dart';
+import 'package:Wellspace/services/UsuarioService.dart';
 
 class SideMenu extends StatefulWidget {
   const SideMenu({super.key});
@@ -12,7 +12,7 @@ class SideMenu extends StatefulWidget {
 }
 
 class _SideMenuState extends State<SideMenu> {
-  Usuario? _usuario; //
+  Usuario? _usuario;
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -28,7 +28,7 @@ class _SideMenuState extends State<SideMenu> {
       _errorMessage = null;
     });
     try {
-      final usuario = await UsuarioService.buscarUsuarioPorId(); //
+      final usuario = await UsuarioService.buscarUsuarioPorId();
       setState(() {
         _usuario = usuario;
         _isLoading = false;
@@ -94,7 +94,7 @@ class _SideMenuState extends State<SideMenu> {
         GestureDetector(
           onTap: () {
             Navigator.pop(context);
-            Navigator.pushReplacementNamed(context, '/Perfil'); //
+            Navigator.pushReplacementNamed(context, '/Perfil');
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,6 +126,8 @@ class _SideMenuState extends State<SideMenu> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isLocador = _usuario?.usuarioRole == 'LOCADOR';
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -150,7 +152,7 @@ class _SideMenuState extends State<SideMenu> {
                         ? 'Mudar para tema claro'
                         : 'Mudar para tema escuro',
                     onPressed: () {
-                      Provider.of<ThemeNotifier>(context, listen: false) 
+                      Provider.of<ThemeNotifier>(context, listen: false)
                           .toggleTheme();
                     },
                   ),
@@ -167,7 +169,7 @@ class _SideMenuState extends State<SideMenu> {
             title: const Text('Início'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/home'); 
+              Navigator.pushReplacementNamed(context, '/home');
             },
           ),
           ListTile(
@@ -175,7 +177,7 @@ class _SideMenuState extends State<SideMenu> {
             title: const Text('Explorar Espaços'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/espacos'); 
+              Navigator.pushReplacementNamed(context, '/espacos');
             },
           ),
           ListTile(
@@ -183,23 +185,24 @@ class _SideMenuState extends State<SideMenu> {
             title: const Text('Minhas Reservas'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/minhas-reservas'); 
+              Navigator.pushReplacementNamed(context, '/minhas-reservas');
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.business_center), 
-            title: const Text('Meus Espaços'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/meus-espacos'); 
-            },
-          ),
+          if (isLocador)
+            ListTile(
+              leading: const Icon(Icons.business_center),
+              title: const Text('Meus Espaços'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushReplacementNamed(context, '/meus-espacos');
+              },
+            ),
           ListTile(
             leading: const Icon(Icons.add_business),
             title: const Text('Cadastrar Sala'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/cadastroSala'); 
+              Navigator.pushReplacementNamed(context, '/cadastroSala');
             },
           ),
           ListTile(
@@ -207,7 +210,7 @@ class _SideMenuState extends State<SideMenu> {
             title: const Text('Meu Perfil'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/Perfil'); 
+              Navigator.pushReplacementNamed(context, '/Perfil');
             },
           ),
           ListTile(
@@ -215,14 +218,13 @@ class _SideMenuState extends State<SideMenu> {
             title: const Text('Configurações'),
             onTap: () {
               Navigator.pop(context);
-      
             },
           ),
           ListTile(
             leading: const Icon(Icons.help),
             title: const Text('Suporte'),
             onTap: () {
-              Navigator.pushNamed(context, '/suporte'); //
+              Navigator.pushNamed(context, '/suporte');
             },
           ),
           const Divider(),
@@ -231,9 +233,9 @@ class _SideMenuState extends State<SideMenu> {
             title: const Text('Sair'),
             onTap: () async {
               Navigator.pop(context);
-              await UsuarioService.logout(); 
+              await UsuarioService.logout();
               Navigator.pushNamedAndRemoveUntil(
-                  context, '/login', (Route<dynamic> route) => false); 
+                  context, '/login', (Route<dynamic> route) => false);
             },
           ),
         ],
