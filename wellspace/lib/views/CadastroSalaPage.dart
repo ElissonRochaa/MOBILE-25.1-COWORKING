@@ -191,33 +191,27 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            mostrarDias = !mostrarDias;
-                          });
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Dias Disponíveis na Semana',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w600),
-                            ),
-                            Icon(
-                              mostrarDias
-                                  ? Icons.expand_less
-                                  : Icons.expand_more,
-                            ),
-                          ],
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 8.0),
+                        child: Text(
+                          'Dias Disponíveis na Semana',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      if (mostrarDias)
-                        Wrap(
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        child: Wrap(
                           spacing: 12,
-                          runSpacing: 4,
+                          runSpacing: 8,
                           children: [
                             'Seg',
                             'Ter',
@@ -255,6 +249,7 @@ class _CadastroSalaPageState extends State<CadastroSalaPage> {
                             );
                           }).toList(),
                         ),
+                      ),
                     ],
                   );
                 },
