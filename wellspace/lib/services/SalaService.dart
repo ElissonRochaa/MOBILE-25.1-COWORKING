@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import '../models/Sala.dart';
+import '../models/Favorito.dart';
 
 class SalaService {
   static const String _baseUrl = 'https://wellspace-app.onrender.com';
@@ -169,12 +170,85 @@ class SalaService {
 
       if (_isSuccess(response.statusCode)) {
         final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
-        return data.map((json) => Sala.fromJson(json)).toList(); 
+        return data.map((json) => Sala.fromJson(json)).toList();
       } else {
         return [];
       }
     } catch (e) {
       return [];
+    }
+  }
+
+  static Future<bool> favoritarSala(String usuarioId, String salaId) async {
+    try {
+      final token = await _getTokenOrThrow();
+
+      final body = json.encode({
+        "usuarioId": usuarioId,
+        "salaId": salaId,
+      });
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/favoritos/criar-favorito'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: body,
+      );
+
+      print('[SalaService] favoritarSala status: ${response.statusCode}');
+      return _isSuccess(response.statusCode);
+    } catch (e) {
+      print('[SalaService] Exceção ao favoritar sala: $e');
+      return false;
+    }
+  }
+
+  static Future<List<Favorito>> listarFavoritosPorUsuario(
+      String usuarioId) async {
+    try {
+      final token = await _getTokenOrThrow();
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/favoritos/listar-por-usuario/$usuarioId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print(
+          '[SalaService] listarFavoritosPorUsuario status: ${response.statusCode}');
+
+      if (_isSuccess(response.statusCode)) {
+        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+        return data.map((json) => Favorito.fromJson(json)).toList();
+      } else {
+        print('[SalaService] Erro ao listar favoritos: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('[SalaService] Exceção ao listar favoritos: $e');
+      return [];
+    }
+  }
+
+  static Future<bool> deletarFavorito(String favoritoId) async {
+    try {
+      final token = await _getTokenOrThrow();
+
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/favoritos/deletar/$favoritoId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print('[SalaService] deletarFavorito status: ${response.statusCode}');
+      return _isSuccess(response.statusCode);
+    } catch (e) {
+      print('[SalaService] Exceção ao deletar favorito: $e');
+      return false;
     }
   }
 }
