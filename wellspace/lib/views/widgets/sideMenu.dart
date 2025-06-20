@@ -213,13 +213,13 @@ class _SideMenuState extends State<SideMenu> {
               Navigator.pushReplacementNamed(context, '/Perfil');
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Configurações'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
+          // ListTile(
+          //   leading: const Icon(Icons.settings),
+          //   title: const Text('Configurações'),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //   },
+          // ),
           ListTile(
             leading: const Icon(Icons.help),
             title: const Text('Suporte'),
