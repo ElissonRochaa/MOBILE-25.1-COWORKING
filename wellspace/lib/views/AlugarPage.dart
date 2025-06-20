@@ -6,7 +6,6 @@ import 'package:Wellspace/viewmodels/SalaDetailViewModel.dart';
 import 'package:Wellspace/viewmodels/SalaImagemViewModel.dart';
 import 'package:Wellspace/views/ReservaEspacoPage.dart';
 
-// Este widget wrapper está correto, ele fornece os ViewModels para a página abaixo.
 class Alugapage extends StatelessWidget {
   final String salaId;
   const Alugapage({super.key, required this.salaId});
@@ -35,7 +34,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
   @override
   void initState() {
     super.initState();
-    // A forma como os dados são carregados está correta.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final salaDetailViewModel =
           Provider.of<SalaDetailViewModel>(context, listen: false);
@@ -55,14 +53,10 @@ class _CoworkingPageState extends State<CoworkingPage> {
 
   @override
   Widget build(BuildContext context) {
-    // REMOVIDO: O widget Theme local que impedia o tema global de funcionar.
-    // Agora, a página usará o tema claro/escuro definido no MaterialApp.
     return Scaffold(
-      // A cor de fundo do Scaffold principal agora virá do tema global.
       body: Consumer2<SalaDetailViewModel, SalaImagemViewModel>(
         builder: (context, salaDetailVM, salaImagemVM, child) {
-          final theme = Theme.of(
-              context); // Obtém o tema para passar para os widgets filhos.
+          final theme = Theme.of(context);
 
           if (salaDetailVM.isLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -76,7 +70,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
           final sala = salaDetailVM.sala!;
           final imagens = salaImagemVM.imagensCadastradas;
 
-          // O conteúdo da página agora está em um widget separado para melhor organização.
           return _PageContent(sala: sala, imagens: imagens);
         },
       ),
@@ -84,7 +77,6 @@ class _CoworkingPageState extends State<CoworkingPage> {
   }
 }
 
-// O conteúdo principal da página, que usa o tema herdado.
 class _PageContent extends StatelessWidget {
   final Sala sala;
   final List<String> imagens;
@@ -93,11 +85,9 @@ class _PageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // Obtém o tema para usar nos widgets.
+    final theme = Theme.of(context);
 
     return Scaffold(
-      // A cor de fundo aqui também usa o tema.
-      // `colorScheme.surfaceVariant` é uma boa opção para fundos de conteúdo.
       backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.3),
       body: CustomScrollView(
         slivers: [
@@ -114,7 +104,6 @@ class _PageContent extends StatelessWidget {
                     sala.descricao.isNotEmpty
                         ? sala.descricao
                         : "Nenhuma descrição disponível.",
-                    // Cor de texto adaptável.
                     style: theme.textTheme.bodyLarge?.copyWith(
                         height: 1.5,
                         color: theme.colorScheme.onSurface.withOpacity(0.85)),
@@ -135,20 +124,17 @@ class _PageContent extends StatelessWidget {
                   icon: Icons.location_on_outlined,
                   child: _LocationMap(),
                 ),
-                // Espaço extra no final para que a barra de reserva não cubra o último card.
                 const SizedBox(height: 120),
               ]),
             ),
           ),
         ],
       ),
-      // A barra de reserva na parte inferior da tela.
       bottomNavigationBar: _StickyBookingBar(sala: sala),
     );
   }
 }
 
-// A AppBar customizada que se expande e colapsa.
 class _CustomSliverAppBar extends StatelessWidget {
   final List<String> imagens;
   const _CustomSliverAppBar({required this.imagens});
@@ -162,7 +148,6 @@ class _CustomSliverAppBar extends StatelessWidget {
       floating: false,
       pinned: true,
       stretch: true,
-      // As cores agora vêm do appBarTheme global, garantindo consistência.
       backgroundColor: theme.appBarTheme.backgroundColor,
       foregroundColor: theme.appBarTheme.foregroundColor,
       elevation: 2,
@@ -175,7 +160,6 @@ class _CustomSliverAppBar extends StatelessWidget {
   }
 }
 
-// A galeria de imagens dentro da AppBar.
 class _ImageGallery extends StatelessWidget {
   final List<String> imagens;
   const _ImageGallery({required this.imagens});
@@ -186,7 +170,6 @@ class _ImageGallery extends StatelessWidget {
     final theme = Theme.of(context);
 
     if (imagens.isEmpty) {
-      // Placeholder adaptável para quando não há imagens.
       return Container(
           color: theme.colorScheme.surfaceVariant,
           child: Center(
@@ -204,13 +187,11 @@ class _ImageGallery extends StatelessWidget {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () {
-                // Navegação para a tela cheia.
                 Navigator.push(
                   context,
                   PageRouteBuilder(
                     opaque: false,
-                    barrierColor: Colors
-                        .black, // Fundo preto é ideal para visualização de imagem.
+                    barrierColor: Colors.black,
                     pageBuilder: (context, animation, secondaryAnimation) {
                       return FullScreenImageViewer(
                         imageUrls: imagens,
@@ -233,7 +214,6 @@ class _ImageGallery extends StatelessWidget {
             );
           },
         ),
-        // Gradiente para garantir que os ícones da AppBar fiquem legíveis.
         IgnorePointer(
           child: Container(
             decoration: BoxDecoration(
@@ -246,7 +226,6 @@ class _ImageGallery extends StatelessWidget {
             ),
           ),
         ),
-        // Indicador de página (pontos)
         if (imagens.length > 1)
           Positioned(
             bottom: 16.0,
@@ -257,10 +236,8 @@ class _ImageGallery extends StatelessWidget {
                 controller: pageController,
                 count: imagens.length,
                 effect: ScrollingDotsEffect(
-                  // Cores do indicador adaptáveis.
                   dotColor: Colors.white.withOpacity(0.6),
-                  activeDotColor:
-                      theme.colorScheme.primary, // Usa a cor primária do tema.
+                  activeDotColor: theme.colorScheme.primary,
                   dotHeight: 8,
                   dotWidth: 8,
                 ),
@@ -272,7 +249,6 @@ class _ImageGallery extends StatelessWidget {
   }
 }
 
-// Informações de cabeçalho (nome da sala, avaliação, etc.).
 class _HeaderInfo extends StatelessWidget {
   final Sala sala;
   const _HeaderInfo({required this.sala});
@@ -288,9 +264,8 @@ class _HeaderInfo extends StatelessWidget {
         Text(
           sala.nomeSala,
           style: theme.textTheme.headlineMedium?.copyWith(
-            // Estilo do tema
             fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface, // Cor adaptável
+            color: theme.colorScheme.onSurface,
             height: 1.2,
           ),
         ),
@@ -299,10 +274,8 @@ class _HeaderInfo extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Container(
-              // Badge de avaliação
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                // Cor de fundo adaptável para o badge.
                 color: isDarkMode
                     ? Colors.amber.withOpacity(0.2)
                     : Colors.amber.shade100,
@@ -317,7 +290,6 @@ class _HeaderInfo extends StatelessWidget {
                       style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
-                          // Cor de texto adaptável para o badge.
                           color: isDarkMode
                               ? Colors.amber.shade200
                               : Colors.amber.shade900)),
@@ -341,7 +313,6 @@ class _HeaderInfo extends StatelessWidget {
   }
 }
 
-// Um card genérico para exibir informações.
 class _InfoCard extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -358,11 +329,9 @@ class _InfoCard extends StatelessWidget {
       margin: const EdgeInsets.only(top: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.cardColor, // Cor de fundo do card adaptável.
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color:
-                theme.colorScheme.outline.withOpacity(0.2)), // Borda adaptável.
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,15 +343,13 @@ class _InfoCard extends StatelessWidget {
               Text(
                 title,
                 style: theme.textTheme.titleLarge?.copyWith(
-                  // Estilo do tema
                   fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface, // Cor adaptável
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          // O `child` (conteúdo do card) deve ter seus próprios estilos adaptáveis.
           DefaultTextStyle(
               style: theme.textTheme.bodyMedium!
                   .copyWith(color: theme.colorScheme.onSurface),
@@ -393,7 +360,6 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-// Grid de comodidades.
 class _AmenitiesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -423,7 +389,6 @@ class _AmenitiesGrid extends StatelessWidget {
             Expanded(
                 child: Text(
               comodidades[index]['label'] as String,
-              // Cor do texto adaptável.
               style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: theme.colorScheme.onSurface),
@@ -435,7 +400,6 @@ class _AmenitiesGrid extends StatelessWidget {
   }
 }
 
-// Informações de horário.
 class _HoursInfo extends StatelessWidget {
   final Sala sala;
   const _HoursInfo({required this.sala});
@@ -480,7 +444,6 @@ class _HoursInfo extends StatelessWidget {
   }
 }
 
-// Placeholder do mapa de localização.
 class _LocationMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -493,12 +456,10 @@ class _LocationMap extends StatelessWidget {
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              // Cor de fundo do mapa adaptável.
               color: theme.colorScheme.surfaceVariant,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
-              // Ícone do mapa adaptável.
               child: Icon(Icons.map_outlined,
                   size: 50, color: theme.colorScheme.onSurfaceVariant),
             ),
@@ -506,7 +467,6 @@ class _LocationMap extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text("Av. Exemplo, 123 - Próximo ao Metrô",
-            // Cor do texto de endereço adaptável.
             style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withOpacity(0.8))),
       ],
@@ -514,7 +474,6 @@ class _LocationMap extends StatelessWidget {
   }
 }
 
-// A barra inferior fixa para reserva.
 class _StickyBookingBar extends StatelessWidget {
   final Sala sala;
   const _StickyBookingBar({required this.sala});
@@ -528,9 +487,7 @@ class _StickyBookingBar extends StatelessWidget {
         bottom: MediaQuery.of(context).padding.bottom + 12,
       ),
       decoration: BoxDecoration(
-        // Cor de fundo da barra adaptável.
         color: theme.cardColor,
-        // Sombra adaptável.
         boxShadow: [
           BoxShadow(
             color: theme.shadowColor.withOpacity(0.08),
@@ -538,7 +495,6 @@ class _StickyBookingBar extends StatelessWidget {
             offset: const Offset(0, -5),
           ),
         ],
-        // Borda superior adaptável.
         border: Border(
             top: BorderSide(
                 color: theme.colorScheme.outline.withOpacity(0.2), width: 1)),
@@ -551,7 +507,6 @@ class _StickyBookingBar extends StatelessWidget {
             children: [
               Text(
                 'R\$ ${sala.precoHora.toStringAsFixed(2)}',
-                // Estilo do preço adaptável.
                 style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.onSurface),
@@ -572,7 +527,6 @@ class _StickyBookingBar extends StatelessWidget {
                               ReservaStepperScreen(sala: sala)))
                   : null,
               style: ElevatedButton.styleFrom(
-                // Estilo do botão adaptável.
                 backgroundColor: theme.colorScheme.primary,
                 foregroundColor: theme.colorScheme.onPrimary,
                 disabledBackgroundColor:
@@ -592,9 +546,6 @@ class _StickyBookingBar extends StatelessWidget {
   }
 }
 
-// A tela cheia para visualização de imagens.
-// Esta tela intencionalmente usa um fundo preto para uma experiência de visualização imersiva,
-// o que é uma prática comum de UX e não precisa necessariamente se adaptar ao tema claro/escuro da UI principal.
 class FullScreenImageViewer extends StatefulWidget {
   final List<String> imageUrls;
   final int initialIndex;
@@ -629,10 +580,10 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Mantido preto para imersão.
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white, // Ícones brancos sobre fundo preto.
+        foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -651,7 +602,6 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
               });
             },
             itemBuilder: (context, index) {
-              // InteractiveViewer permite que o usuário dê zoom na imagem.
               return InteractiveViewer(
                 panEnabled: true,
                 minScale: 1.0,
