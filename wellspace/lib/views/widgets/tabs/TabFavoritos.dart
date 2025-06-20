@@ -1,4 +1,5 @@
 import 'package:Wellspace/viewmodels/FavoritarSalaViewModel.dart';
+import 'package:Wellspace/views/widgets/ThemeNotifer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Wellspace/models/Sala.dart';
@@ -51,6 +52,9 @@ class _FavoritosTabState extends State<FavoritosTab> {
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    final isDark = themeNotifier.isDarkMode;
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -62,9 +66,12 @@ class _FavoritosTabState extends State<FavoritosTab> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Espaços que você salvou para acessar facilmente',
-              style: TextStyle(color: Colors.black54, fontSize: 16),
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black54,
+                fontSize: 16,
+              ),
             ),
             const SizedBox(height: 16),
             isLoading
