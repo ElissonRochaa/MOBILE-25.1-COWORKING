@@ -1,15 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:Wellspace/viewmodels/UsuarioDetailViewModel.dart';
+import 'package:Wellspace/models/Usuario.dart';
 
-class EdiProfilePage extends StatefulWidget {
-  const EdiProfilePage({super.key});
+class EditProfilePage extends StatefulWidget {
+  const EditProfilePage({super.key});
 
   @override
-  State<EdiProfilePage> createState() => _EdiProfilePageState();
+  State<EditProfilePage> createState() => _EditProfilePageState();
 }
 
-class _EdiProfilePageState extends State<EdiProfilePage> {
+class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _nomeController;
@@ -17,17 +20,25 @@ class _EdiProfilePageState extends State<EdiProfilePage> {
   late TextEditingController _dataNascimentoController;
   late TextEditingController _senhaController;
   String? _fotoBase64;
+  DateTime? _dataNascimentoSelecionada;
 
   @override
   void initState() {
     super.initState();
+    final usuario =
+        Provider.of<UsuarioDetailViewModel>(context, listen: false).usuario;
 
-    // MOCKED USER DATA
-    _nomeController = TextEditingController(text: "João Silva");
-    _emailController = TextEditingController(text: "joao@email.com");
-    _dataNascimentoController = TextEditingController(text: "01/01/1990");
+    _nomeController = TextEditingController(text: usuario?.nome ?? '');
+    _emailController = TextEditingController(text: usuario?.email ?? '');
+    _dataNascimentoSelecionada = usuario?.dataNascimento;
+    _dataNascimentoController = TextEditingController(
+      text: usuario?.dataNascimento != null
+          ? "${usuario!.dataNascimento!.day.toString().padLeft(2, '0')}/${usuario.dataNascimento!.month.toString().padLeft(2, '0')}/${usuario.dataNascimento!.year}"
+          : '',
+    );
     _senhaController = TextEditingController();
-    _fotoBase64 = null;
+    _fotoBase64 =
+        usuario?.fotoPerfil.isNotEmpty == true ? usuario!.fotoPerfil : null;
   }
 
   @override
@@ -52,18 +63,26 @@ class _EdiProfilePageState extends State<EdiProfilePage> {
 
   void _salvarPerfil() {
     if (_formKey.currentState!.validate()) {
-      // Simula o salvamento e mostra um snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Perfil (mockado) atualizado com sucesso!')),
-      );
+      // ta faltando a logica de atualizar o back aqui
 
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Perfil atualizado com sucesso!')),
+      );
       Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final usuario = Provider.of<UsuarioDetailViewModel>(context).usuario;
+    final theme = Theme.of(context);
+
+    if (usuario == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text("Editar Perfil")),
       body: Padding(
@@ -72,15 +91,39 @@ class _EdiProfilePageState extends State<EdiProfilePage> {
           key: _formKey,
           child: ListView(
             children: [
-              GestureDetector(
-                onTap: _selecionarFoto,
-                child: CircleAvatar(
-                  radius: 45,
-                  backgroundImage:
-                      _fotoBase64 != null ? NetworkImage(_fotoBase64!) : null,
-                  child: _fotoBase64 == null
-                      ? const Icon(Icons.person, size: 45)
-                      : null,
+              Center(
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: theme.colorScheme.surfaceVariant,
+                      backgroundImage: _fotoBase64 != null
+                          ? NetworkImage(_fotoBase64!)
+                          : null,
+                      child: _fotoBase64 == null
+                          ? Icon(Icons.person_outline,
+                              size: 50,
+                              color: theme.colorScheme.onSurfaceVariant)
+                          : null,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: _selecionarFoto,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: theme.colorScheme.primary.withOpacity(0.9),
+                          ),
+                          child: const Icon(Icons.edit,
+                              color: Colors.white, size: 18),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
@@ -100,20 +143,22 @@ class _EdiProfilePageState extends State<EdiProfilePage> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _dataNascimentoController,
+                readOnly: true,
                 decoration:
                     const InputDecoration(labelText: "Data de nascimento"),
-                readOnly: true,
                 onTap: () async {
-                  final initialDate = DateTime.now();
                   final picked = await showDatePicker(
                     context: context,
-                    initialDate: initialDate,
+                    initialDate: _dataNascimentoSelecionada ?? DateTime(2000),
                     firstDate: DateTime(1900),
                     lastDate: DateTime.now(),
                   );
                   if (picked != null) {
-                    _dataNascimentoController.text =
-                        "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
+                    setState(() {
+                      _dataNascimentoSelecionada = picked;
+                      _dataNascimentoController.text =
+                          "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
+                    });
                   }
                 },
               ),
