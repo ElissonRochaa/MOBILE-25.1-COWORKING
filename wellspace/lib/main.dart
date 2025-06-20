@@ -118,13 +118,20 @@ class MyApp extends StatelessWidget {
             locale: const Locale('pt', 'BR'),
             initialRoute: '/',
             routes: {
-              '/': (context) => const SplashPage(),
+              '/': (context) {
+                final uri = Uri.base;
+                if (uri.path.startsWith('/reset-password')) {
+                  final token = uri.queryParameters['token'];
+                  return ResetPasswordScreen(token: token ?? '');
+                }
+                return const SplashPage();
+              },
               '/login': (context) => const LoginPage(),
               '/cadastro': (context) => CadastroPage(),
               '/home': (context) => const HomePage(),
               '/cadastroSala': (context) => CadastroSalaPage(),
               '/Perfil': (context) => const ProfilePage(),
-              '/editar-perfil': (context) => const EdiProfilePage(),
+              '/editar-perfil': (context) => const EditProfilePage(),
               '/espacos': (context) => const EspacosPage(),
               '/suporte': (context) => const SuportePage(),
               '/forgot-password': (context) => const ForgotPasswordForm(),
